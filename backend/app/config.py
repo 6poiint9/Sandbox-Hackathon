@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(BACKEND_DIR.parent / ".env", BACKEND_DIR / ".env"),
         env_file_encoding="utf-8",
+        env_ignore_empty=True,  # leere Zeilen wie "EXA_API_KEY=" überschreiben nichts
         extra="ignore",
     )
 
