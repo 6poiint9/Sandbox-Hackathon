@@ -14,10 +14,16 @@ import re
 from collections import Counter
 
 # Wie häufig Betriebe dieser Branche lokale Vereine sponsern (0–1).
-# Erfahrungswert aus der Vereinspraxis, in Gesprächen mit Vorständen prüfen.
+# Beleg, soweit vorhanden: BISp, "Sportsponsoring & Sportwerbung in der breiten
+# Unternehmensbasis" (2025, Berichtsjahr 2023): Sportsponsoring betreiben 43 % im
+# Baugewerbe (→ Handwerk 1.0) und 42 % im verarbeitenden Gewerbe; 65 % der
+# sponsernden Firmen unterstützen Amateurvereine. Größere Firmen (ab 5 Mio. € Umsatz)
+# sponsern deutlich häufiger (69 % gegenüber 26 % unter 0,5 Mio. €).
+# Übrige Werte: Erfahrungswert aus der Vereinspraxis (z. B. Sparkassen, Volksbanken,
+# Autohäuser als klassische Vereinssponsoren), in Gesprächen mit Vorständen prüfen.
 SPONSORING_NAEHE: dict[str, float] = {
     "Autohäuser": 1.0, "Banken": 1.0, "Stadtwerke": 1.0, "Versicherungen": 0.9,
-    "Bäckereien": 0.9, "Handwerk": 0.9, "Brauerei": 0.9, "Getränkehandel": 0.8,
+    "Bäckereien": 0.9, "Handwerk": 1.0, "Brauerei": 0.9, "Getränkehandel": 0.8,
     "Sportfachhandel": 0.8, "Familienbetriebe": 0.8, "Apotheken": 0.7, "Optiker": 0.7,
     "Physio": 0.7, "Druckerei": 0.7, "Logistik": 0.7, "Fitness": 0.6,
     "Gastronomie": 0.6, "Handel": 0.5, "Dienstleister": 0.5, "Pflege": 0.5,
