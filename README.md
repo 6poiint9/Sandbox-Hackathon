@@ -10,7 +10,7 @@ Entstanden am 7. November 2026 beim **Cursor × Sandbox Founders Hackathon** im 
 |---|---|
 | 🎬 Pitch + Demo-Video | _Link folgt_ |
 | 🖥️ Live-Demo | _Link folgt_ |
-| 📊 Pitch-Deck | _Link folgt_ |
+| 📊 Pitch-Deck | [Google Slides](https://docs.google.com/presentation/d/1p4gav7rx0arVGWb5EWd1qgWBckvdj517CTxpvdoi-bI/edit) |
 
 ---
 
