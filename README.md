@@ -51,26 +51,32 @@ Sponsorenkompass bringt beides zusammen: **Jeder Kandidat bekommt ein empfohlene
 
 ---
 
-## Funktionsumfang (MVP)
+## Funktionsumfang (Stand 7.11.2026)
 
-**Muss**
-- [ ] Onboarding: Website-URL auslesen, Vereinsprofil vorbefüllen, Fragen ergänzen
-- [ ] Angebots-Inventar aus dem Sponsoring-Katalog abhaken (frei / vergeben)
-- [ ] Bestandssponsoren per CSV hochladen oder von Hand anlegen
-- [ ] Kandidaten im Umkreis aus OpenStreetMap mit Vorfilter nach Branche und Entfernung
-- [ ] Recherche der besten Kandidaten mit exa.ai, Bewertung 0–100 mit drei Gründen und Quellen
-- [ ] Empfohlenes Paket pro Kandidat
-- [ ] Potenzialanalyse: Potenzialzahl, freie Pakete, Lücken, Karte
-- [ ] Ansprache: Brief, Gesprächsleitfaden, E-Mail für nach dem Erstkontakt
-- [ ] Pipeline mit Status und Liste der bestehenden Sponsoren, CSV-Export
+**Fertig**
+- [x] Landingpage mit Anmeldung für Warteliste und Pilotvereine
+- [x] Onboarding **nur mit der Website**: Profil, Mannschaften, Spielklasse, Veranstaltungen
+- [x] **Sportstätte** statt Impressumsadresse als Mittelpunkt der Suche (oft stehen dort Privatadressen)
+- [x] Bestandssponsoren aus Text **und aus Logos** (Gemini liest die Logos der Sponsorenseite), CSV-Import
+- [x] Angebots-Inventar aus dem Sponsoring-Katalog
+- [x] Betriebe im Umkreis (Google Places, OpenStreetMap als Ausweichweg), Vorfilter, Lücken nach Branchen
+- [x] Recherche mit exa.ai, Bewertung 0–100 mit drei Gründen und Quellenlinks, empfohlenes Paket mit Richtpreis
+- [x] Potenzialanalyse: ungenutztes Potenzial pro Saison, freie Pakete, Annahmen offengelegt
+- [x] Analyse im Hintergrund – kein Warten, optional E-Mail, wenn alles fertig ist
+- [x] Ansprache: Brief, Telefonleitfaden, E-Mail für nach dem Erstkontakt
+- [x] **Sponsoren-CRM**: Bestand bearbeiten, Kontakt, Status, Betrag, Laufzeit, Verlauf, Wiedervorlagen, auslaufende Verträge
+- [x] **Assets**: Banden, Trikots, Social Media … mit Anzahl, Vergaben an Sponsoren, Preis, Laufzeit
+- [x] Kandidat nach Zusage als Sponsor übernehmen
+- [x] **Konten**: Registrierung, Anmeldung, „Meine Vereine“; Vereinsdaten nur für das eigene Konto
+- [x] CSV-Export
 
-**Kann**
+**Als Nächstes**
 - [ ] „Ähnlich wie euer bester Sponsor“
 - [ ] Branchenkonflikte erkennen (z. B. zwei Autohäuser bei Exklusivität)
-- [ ] Erinnerung vor Ablauf eines Sponsorings
 - [ ] Sponsoring-Mappe als PDF
+- [ ] Zugriffsschutz auch für Endpunkte ohne Vereins-ID im Pfad (Kandidat, Sponsor, Asset), Passwort zurücksetzen
 
-**Bewusst nicht:** automatischer Massenversand, Login, Bezahlung, Vertragsdokumente und Rechnungen, Satzungs-Upload.
+**Bewusst nicht:** automatischer Massenversand, Bezahlung, Vertragsdokumente und Rechnungen.
 
 ---
 

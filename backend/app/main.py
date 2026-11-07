@@ -2,14 +2,15 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.data import katalog
 from app import models  # noqa: F401 - registriert die Tabellen
 from app.db import init_db
-from app.routers import analyse, crm, kandidaten, landing, onboarding, vereine
+from app.routers import analyse, crm, kandidaten, konto, landing, onboarding, vereine
+from app.services.auth import vereinszugriff
 
 
 @asynccontextmanager
@@ -27,11 +28,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(onboarding.router)
-app.include_router(vereine.router)
-app.include_router(kandidaten.router)
-app.include_router(analyse.router)
-app.include_router(crm.router)
+app.include_router(vereine.router, dependencies=[Depends(vereinszugriff)])
+app.include_router(kandidaten.router, dependencies=[Depends(vereinszugriff)])
+app.include_router(analyse.router, dependencies=[Depends(vereinszugriff)])
+app.include_router(crm.router, dependencies=[Depends(vereinszugriff)])
 app.include_router(landing.router)
+app.include_router(konto.router)
 
 
 @app.get("/health")

@@ -34,6 +34,7 @@ class VereinBasis(SQLModel):
 
 class Verein(VereinBasis, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    konto_id: int | None = Field(default=None, index=True)  # None = ohne Konto angelegt
 
 
 class InventarPosten(SQLModel, table=True):
@@ -157,3 +158,17 @@ class Interessent(SQLModel, table=True):
     nachricht: str | None = None
     pilot: bool = False
     zeitpunkt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Konto(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    email: str = Field(index=True, unique=True)
+    name: str | None = None
+    passwort_hash: str
+    erstellt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Sitzung(SQLModel, table=True):
+    token_hash: str = Field(primary_key=True)  # sha256 des Tokens, das Token selbst wird nie gespeichert
+    konto_id: int = Field(foreign_key="konto.id", index=True)
+    erstellt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

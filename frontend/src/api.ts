@@ -1,7 +1,43 @@
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
+// Anmelde-Token: nur im Browser dieses Geräts. Speicher kann gesperrt sein (privates Fenster).
+const TOKEN_SCHLUESSEL = 'sponsorenkompass.token'
+export function tokenLesen(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_SCHLUESSEL)
+  } catch {
+    return null
+  }
+}
+export function tokenSetzen(token: string | null) {
+  try {
+    if (token) localStorage.setItem(TOKEN_SCHLUESSEL, token)
+    else localStorage.removeItem(TOKEN_SCHLUESSEL)
+  } catch {
+    /* ohne Speicher bleibt man nur bis zum Neuladen angemeldet */
+  }
+  window.dispatchEvent(new Event('konto-geaendert'))
+}
+
+function mitToken(init?: RequestInit): RequestInit {
+  const token = tokenLesen()
+  if (!token) return init ?? {}
+  return { ...init, headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${token}` } }
+}
+
+export async function herunterladen(pfad: string, dateiname: string) {
+  const antwort = await fetch(`${API_URL}${pfad}`, mitToken())
+  if (!antwort.ok) throw new Error(`Download fehlgeschlagen (HTTP ${antwort.status})`)
+  const url = URL.createObjectURL(await antwort.blob())
+  const a = document.createElement('a')
+  a.href = url
+  a.download = dateiname
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 async function anfrage<T>(pfad: string, init?: RequestInit): Promise<T> {
-  const antwort = await fetch(`${API_URL}${pfad}`, init)
+  const antwort = await fetch(`${API_URL}${pfad}`, mitToken(init))
   if (!antwort.ok) {
     let detail = `HTTP ${antwort.status}`
     try {
@@ -69,8 +105,11 @@ export type ProfilVorschlag = {
   hinweise: string[]
 }
 
+export type Konto = { id: number; email: string; name: string | null }
+
 export type Verein = {
   id: number
+  konto_id: number | null
   name: string
   website: string | null
   ort: string

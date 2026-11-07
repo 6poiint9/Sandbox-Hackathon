@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api, API_URL, datum, euro, SPONSOR_STATUS_TEXT, STATUS_TEXT } from '../api'
+import { api, datum, euro, herunterladen, SPONSOR_STATUS_TEXT, STATUS_TEXT } from '../api'
 import type { Aufgabe, Kandidat, KandidatStatus, Sponsor, SponsorStatus } from '../api'
 import Verlauf from '../components/Verlauf'
 import { Fehler, Feld, Karte, Knopf, ScoreBadge, eingabe } from '../components/ui'
@@ -63,7 +63,7 @@ export default function Sponsoren({ vereinId, onOeffnen }: { vereinId: number; o
           <h1 className="text-2xl font-semibold text-slate-900">Sponsoren</h1>
           <p className="text-slate-600">Bestand pflegen, Ansprache verfolgen, nichts vergessen.</p>
         </div>
-        <a href={`${API_URL}/vereine/${vereinId}/export`}><Knopf art="sekundaer">Kandidaten als CSV</Knopf></a>
+        <Knopf art="sekundaer" onClick={() => herunterladen(`/vereine/${vereinId}/export`, 'sponsorenkompass_kandidaten.csv').catch((e: Error) => setFehler(e.message))}>Kandidaten als CSV</Knopf>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

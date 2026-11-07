@@ -81,3 +81,31 @@ def test_landing_anmeldung(c):
     assert z == {"anmeldungen": 1, "pilotvereine": 1}
     z = c.post("/interessenten", json={"email": "vorstand@fc.example", "rolle": "Kassenwart"}).json()
     assert z["anmeldungen"] == 1  # keine Dopplung
+
+
+def test_konto_registrieren_anmelden_und_zugriffsschutz(c):
+    pw = "test-" + "passwort-1"  # Testwert nur für diesen Test
+    r = c.post("/konto/registrieren", json={"email": "Kasse@FC.example", "passwort": pw, "name": "Kasse"})
+    assert r.status_code == 200
+    token = r.json()["token"]
+    kopf = {"Authorization": f"Bearer {token}"}
+    assert c.post("/konto/registrieren", json={"email": "kasse@fc.example", "passwort": pw}).status_code == 409
+    assert c.post("/konto/registrieren", json={"email": "x@fc.example", "passwort": "kurz"}).status_code == 422
+    assert c.post("/konto/anmelden", json={"email": "kasse@fc.example", "passwort": "falsch-falsch"}).status_code == 401
+    assert c.post("/konto/anmelden", json={"email": "kasse@fc.example", "passwort": pw}).status_code == 200
+
+    # Verein 1 ohne Konto ist frei zugänglich, bis er übernommen wird
+    assert c.get("/vereine/1").status_code == 200
+    assert [v["id"] for v in c.post("/konto/vereine/1", headers=kopf).json()] == [1]
+    assert c.get("/vereine/1").status_code == 401
+    assert c.get("/vereine/1/kandidaten").status_code == 401
+    assert c.get("/vereine/1", headers=kopf).status_code == 200
+
+    # neues Konto sieht fremden Verein nicht
+    fremd = c.post("/konto/registrieren", json={"email": "andere@fc.example", "passwort": pw}).json()["token"]
+    assert c.get("/vereine/1", headers={"Authorization": f"Bearer {fremd}"}).status_code == 403
+    # angemeldet angelegter Verein gehört direkt zum Konto
+    neu = c.post("/vereine", json={"name": "SV", "ort": "O"}, headers=kopf).json()
+    assert {v["id"] for v in c.get("/konto/vereine", headers=kopf).json()} == {1, neu["id"]}
+    c.post("/konto/abmelden", headers=kopf)
+    assert c.get("/konto/ich", headers=kopf).status_code == 401
