@@ -106,3 +106,25 @@ def test_prompt_ohne_gruende_bleibt_ehrlich():
     k = Kandidat(verein_id=1, unternehmen_id=1, entfernung_km=1, vorfilter_score=1)
     u = Unternehmen(osm_id="n", name="U", branche="Handel", lat=0, lon=0)
     assert "(keine belegten Gründe)" in ansprache_service.prompt_bauen(v, k, u)
+
+
+def test_verhandlungsrahmen_einstieg_schmerzgrenze_und_guenstigeres_ausweichpaket():
+    from app.services.ansprache import prompt_bauen, verhandlungsrahmen
+
+    v = Verein(id=1, name="FC", ort="O", spielklasse="Bezirksliga", zuschauer_schnitt=100)
+    k = Kandidat(id=1, verein_id=1, unternehmen_id=1, entfernung_km=1.0, vorfilter_score=50,
+                 paket_empfehlung={"katalog_ids": ["trikot_brust"], "namen": ["Trikotbrust"],
+                                   "preis_eur": {"min": 2000, "max": 3500},
+                                   "passende_pakete": ["trikot_brust", "bande"]})
+    rahmen = verhandlungsrahmen(v, k)
+    assert (rahmen.einstieg_eur, rahmen.schmerzgrenze_eur) == (3500, 2000)
+    assert rahmen.ausweich_paket == "Bandenwerbung"
+    assert (rahmen.ausweich_min, rahmen.ausweich_max) == (600, 1200)
+
+    u = Unternehmen(id=1, osm_id="n/1", name="Autohaus", branche="Autohäuser", lat=0, lon=0)
+    prompt = prompt_bauen(v, k, u)
+    assert "Einstiegspreis: 3500 €" in prompt and "Schmerzgrenze: 2000 €" in prompt
+    assert "Sachsponsoring" in prompt
+
+    k.paket_empfehlung = {}
+    assert verhandlungsrahmen(v, k) is None
