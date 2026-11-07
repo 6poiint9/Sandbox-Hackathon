@@ -47,8 +47,8 @@ export default function Assets({ vereinId }: { vereinId: number }) {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Sponsoring-Assets</h1>
-        <p className="text-slate-600">Was ihr anbieten könnt, wie viel davon vergeben ist und an wen.</p>
+        <h1 className="text-2xl font-semibold text-stein-900">Sponsoring-Assets</h1>
+        <p className="text-stein-600">Was ihr anbieten könnt, wie viel davon vergeben ist und an wen.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -71,28 +71,28 @@ export default function Assets({ vereinId }: { vereinId: number }) {
 
       {Object.entries(gruppen).map(([kategorie, liste]) => (
         <section key={kategorie}>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">{kategorie}</h2>
+          <h2 className="mb-2 font-tafel text-xl font-semibold text-tinte">{kategorie}</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {liste.map((a) => (
               <Karte key={a.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium text-slate-900">{a.name}</p>
-                    <p className="text-xs text-slate-500">{a.beschreibung || a.gegenleistung}</p>
+                    <p className="font-medium text-stein-900">{a.name}</p>
+                    <p className="text-xs text-stein-500">{a.beschreibung || a.gegenleistung}</p>
                   </div>
-                  <button className="text-xs text-teal-800 underline" onClick={() => setOffen(offen === a.id ? null : a.id)}>
+                  <button className="text-xs text-rasen-800 underline" onClick={() => setOffen(offen === a.id ? null : a.id)}>
                     {offen === a.id ? 'Schließen' : 'Bearbeiten'}
                   </button>
                 </div>
                 <div className="mt-3">
-                  <div className="flex justify-between text-xs text-slate-600">
+                  <div className="flex justify-between text-xs text-stein-600">
                     <span>{a.belegt} von {a.anzahl} vergeben</span>
                     <span>
                       {a.preis_eur ? `${euro(a.preis_eur)} je Einheit` : a.richtpreis ? `Richtwert ${euro(a.richtpreis.min)}–${euro(a.richtpreis.max)}` : 'Sachleistung'}
                     </span>
                   </div>
-                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full bg-teal-600" style={{ width: `${(a.belegt / a.anzahl) * 100}%` }} />
+                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-stein-100">
+                    <div className="h-full bg-rasen-600" style={{ width: `${(a.belegt / a.anzahl) * 100}%` }} />
                   </div>
                 </div>
                 {a.vergaben.length > 0 && (
@@ -100,7 +100,7 @@ export default function Assets({ vereinId }: { vereinId: number }) {
                     {a.vergaben.map((v) => (
                       <li key={v.id} className="flex items-center justify-between gap-2">
                         <span className="min-w-0 truncate">{v.anzahl}× <span className="font-medium">{v.sponsor}</span></span>
-                        <span className="shrink-0 text-xs text-slate-500">
+                        <span className="shrink-0 text-xs text-stein-500">
                           {v.preis_eur ? euro(v.preis_eur) : ''}{v.bis ? ` · bis ${datum(v.bis)}` : ''}
                           {offen === a.id && <button className="ml-2 text-red-700" onClick={() => aktion(() => api.delete(`/vergaben/${v.id}`))}>×</button>}
                         </span>
@@ -108,14 +108,14 @@ export default function Assets({ vereinId }: { vereinId: number }) {
                     ))}
                   </ul>
                 )}
-                {a.belegt > 0 && a.vergaben.length === 0 && <p className="mt-2 text-xs text-slate-500">Als „schon vergeben“ markiert – Sponsor unten zuordnen.</p>}
+                {a.belegt > 0 && a.vergaben.length === 0 && <p className="mt-2 text-xs text-stein-500">Als „schon vergeben“ markiert – Sponsor unten zuordnen.</p>}
                 {offen === a.id && <AssetEditor asset={a} sponsoren={sponsoren} aktion={aktion} />}
               </Karte>
             ))}
           </div>
         </section>
       ))}
-      {assets.length === 0 && <p className="text-sm text-slate-500">Noch keine Assets. Fügt oben hinzu, was ihr anbieten könnt.</p>}
+      {assets.length === 0 && <p className="text-sm text-stein-500">Noch keine Assets. Fügt oben hinzu, was ihr anbieten könnt.</p>}
     </div>
   )
 }
@@ -131,7 +131,7 @@ function AssetEditor({ asset, sponsoren, aktion }: { asset: AssetAnsicht; sponso
   const zahl = (s: string) => (s ? Number(s.replace(/\D/g, '')) : null)
 
   return (
-    <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
+    <div className="mt-4 space-y-4 border-t border-stein-100 pt-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <Feld label="Anzahl"><input className={eingabe} inputMode="numeric" value={anzahl} onChange={(e) => setAnzahl(e.target.value)} /></Feld>
         <Feld label="Euer Preis je Einheit (€)"><input className={eingabe} inputMode="numeric" value={preis} onChange={(e) => setPreis(e.target.value)} placeholder={asset.richtpreis ? `${asset.richtpreis.min}–${asset.richtpreis.max}` : ''} /></Feld>
@@ -142,7 +142,7 @@ function AssetEditor({ asset, sponsoren, aktion }: { asset: AssetAnsicht; sponso
         <Knopf art="leise" onClick={() => window.confirm(`${asset.name} entfernen?`) && aktion(() => api.delete(`/assets/${asset.id}`))}>Asset entfernen</Knopf>
       </div>
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">An Sponsor vergeben</p>
+        <p className="mb-2 text-sm font-semibold text-stein-700">An Sponsor vergeben</p>
         <div className="grid gap-2 sm:grid-cols-4">
           <select className={`${eingabe} sm:col-span-2`} value={sponsor} onChange={(e) => setSponsor(e.target.value)}>
             <option value="">Sponsor wählen …</option>
@@ -160,9 +160,9 @@ function AssetEditor({ asset, sponsoren, aktion }: { asset: AssetAnsicht; sponso
 
 function Zahl({ wert, text }: { wert: string; text: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <p className="text-xl font-semibold text-slate-900">{wert}</p>
-      <p className="text-xs text-slate-500">{text}</p>
+    <div className="rounded-xl border border-stein-200 bg-white px-4 py-3 shadow-sm">
+      <p className="text-xl font-semibold text-stein-900">{wert}</p>
+      <p className="text-xs text-stein-500">{text}</p>
     </div>
   )
 }

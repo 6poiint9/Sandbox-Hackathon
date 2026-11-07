@@ -4,10 +4,10 @@ import type { Kandidat } from '../api'
 
 function farbe(k: Kandidat) {
   const s = k.recherche_status === 'fertig' ? k.score : null
-  if (s == null) return '#94a3b8'
-  if (s >= 70) return '#0f766e'
-  if (s >= 45) return '#f59e0b'
-  return '#64748b'
+  if (s == null) return '#bac1b5'
+  if (s >= 70) return '#2f6b3f'
+  if (s >= 45) return '#f2c12e'
+  return '#8e978b'
 }
 
 function Ausschnitt({ punkte }: { punkte: [number, number][] }) {
@@ -40,7 +40,7 @@ export default function KandidatenKarte({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <Ausschnitt punkte={punkte} />
-      <CircleMarker center={zentrum} radius={9} pathOptions={{ color: '#0f172a', fillColor: '#0f172a', fillOpacity: 1 }}>
+      <CircleMarker center={zentrum} radius={9} pathOptions={{ color: '#f2c12e', weight: 3, fillColor: '#173b26', fillOpacity: 1 }}>
         <Tooltip>Verein</Tooltip>
       </CircleMarker>
       {kandidaten.map((k) => {

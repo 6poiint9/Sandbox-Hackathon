@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, euro, STATUS_TEXT } from '../api'
-import type { AnalyseZustand, Kandidat, KandidatStatus, Potenzial, Verein } from '../api'
+import type { AnalyseZustand, Finanzierungsplan, Kandidat, KandidatStatus, Potenzial, Verein } from '../api'
+import Anzeigetafel from '../components/Anzeigetafel'
 import KandidatenKarte from '../components/KandidatenKarte'
+import PlanKarte from '../components/PlanKarte'
 import { Fehler, Karte, Knopf, Lader, ScoreBadge, eingabe } from '../components/ui'
 import Benachrichtigung from '../components/Benachrichtigung'
 
@@ -16,23 +18,31 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
   const [branche, setBranche] = useState('')
   const [status, setStatus] = useState<'' | KandidatStatus>('')
   const [alleAnnahmen, setAlleAnnahmen] = useState(false)
+  const [plan, setPlan] = useState<Finanzierungsplan | null>(null)
 
   const laden = useCallback(async () => {
     try {
-      const [v, p, k, r] = await Promise.all([
+      const [v, p, k, r, f] = await Promise.all([
         api.get<Verein>(`/vereine/${vereinId}`),
         api.get<Potenzial>(`/vereine/${vereinId}/potenzial`),
         api.get<Kandidat[]>(`/vereine/${vereinId}/kandidaten`),
         api.get<AnalyseZustand>(`/vereine/${vereinId}/analyse`),
+        api.get<Finanzierungsplan>(`/vereine/${vereinId}/plan`),
       ])
       setVerein(v)
       setPotenzial(p)
       setKandidaten(k)
       setZustand(r)
+      setPlan(f)
     } catch (err) {
       setFehler((err as Error).message)
     }
   }, [vereinId])
+
+  async function zielSetzen(ziel: number | null) {
+    await api.patch<Verein>(`/vereine/${vereinId}`, { ziel_eur: ziel })
+    setPlan(await api.get<Finanzierungsplan>(`/vereine/${vereinId}/plan`))
+  }
 
   useEffect(() => {
     laden()
@@ -67,41 +77,41 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
 
   return (
     <div className="space-y-5">
-      {/* Kopf: die große Zahl */}
-      <section className="rounded-2xl bg-gradient-to-br from-teal-800 to-teal-950 p-5 text-white shadow-md sm:p-8">
-        <p className="text-sm text-teal-100">{verein.name} · {verein.ort}{verein.spielklasse ? ` · ${verein.spielklasse}` : ''}</p>
-        <p className="mt-3 text-sm uppercase tracking-wide text-teal-200">Ungenutztes Sponsoring-Potenzial pro Saison</p>
-        <p className="mt-1 text-4xl font-bold sm:text-5xl">
-          {euro(potenzial.spanne_min)} – {euro(potenzial.spanne_max)}
-        </p>
-        <p className="mt-2 text-xs text-teal-100">Richtwert aus {potenzial.freie_pakete.length} freien Paketen · {potenzial.hinweis}</p>
-        <div className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-          <Kennzahl wert={String(potenzial.bestand_sponsoren)} text="bestehende Sponsoren" />
-          <Kennzahl wert={(potenzial.betriebe_im_umkreis ?? 0).toLocaleString('de-DE')} text={`Betriebe im Umkreis von ${verein.radius_km} km`} />
-          <Kennzahl wert={String(kandidaten.length)} text="passende Kandidaten" />
-          <Kennzahl wert={String(fertigAnzahl)} text="mit Quellen geprüft" />
-        </div>
-      </section>
+      {plan && (
+        <Anzeigetafel
+          verein={verein.name}
+          untertitel={[verein.ort, verein.spielklasse].filter(Boolean).join(', ')}
+          plan={plan}
+          onZiel={zielSetzen}
+        />
+      )}
+      <p className="max-w-prose text-sm text-stein-600">
+        {potenzial.bestand_sponsoren} bestehende Sponsoren, {(potenzial.betriebe_im_umkreis ?? 0).toLocaleString('de-DE')} Betriebe
+        im Umkreis von {verein.radius_km} km, davon {kandidaten.length} passende Kandidaten und {fertigAnzahl} mit Quellen geprüft.{' '}
+        {potenzial.hinweis}
+      </p>
 
       {zustand && (laeuft || zustand.suche_status === 'fehler') && (
         <Benachrichtigung vereinId={vereinId} zustand={zustand} kandidaten={kandidaten.length} onAenderung={setZustand} />
       )}
 
+      {plan && <PlanKarte plan={plan} onOeffnen={onOeffnen} />}
+
       <div className="grid gap-5 lg:grid-cols-3">
         <Karte titel="Eure Lücken" className="lg:col-span-1">
           {potenzial.luecken.length === 0 ? (
-            <p className="text-sm text-slate-500">{sucht ? 'Wird gerade ermittelt …' : 'Noch keine Umkreissuche.'}</p>
+            <p className="text-sm text-stein-500">{sucht ? 'Wird gerade ermittelt …' : 'Noch keine Umkreissuche.'}</p>
           ) : (
             <>
-              <p className="mb-3 text-sm text-slate-600">Branchen ohne Sponsor bei euch – aber mit Betrieben in der Nähe:</p>
+              <p className="mb-3 text-sm text-stein-600">Branchen, aus denen ihr noch keinen Sponsor habt, obwohl es Betriebe in der Nähe gibt:</p>
               <div className="flex flex-wrap gap-2">
                 {potenzial.luecken.slice(0, 8).map((l) => (
                   <button
                     key={l.branche}
                     onClick={() => setBranche(branche === l.branche ? '' : l.branche)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${branche === l.branche ? 'bg-teal-700 text-white' : 'bg-amber-100 text-amber-900 hover:bg-amber-200'}`}
+                    className={`rounded-[3px] px-2.5 py-1 text-sm font-medium ${branche === l.branche ? 'bg-rasen-700 text-white' : 'bg-signal-100 text-signal-900 hover:bg-signal-200'}`}
                   >
-                    {l.branche} · {l.betriebe}
+                    {l.branche} ({l.betriebe})
                   </button>
                 ))}
               </div>
@@ -110,16 +120,16 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
         </Karte>
 
         <Karte titel="Freie Pakete und Richtpreise" className="lg:col-span-2">
-          <ul className="divide-y divide-slate-100 text-sm">
+          <ul className="divide-y divide-stein-100 text-sm">
             {potenzial.freie_pakete.map((p) => (
               <li key={p.katalog_id} className="flex items-baseline justify-between gap-3 py-2">
-                <span className="text-slate-800">
+                <span className="text-stein-800">
                   {p.name}
-                  {p.annahme && <span className="block text-xs text-slate-500">{p.annahme}</span>}
+                  {p.annahme && <span className="block text-xs text-stein-500">{p.annahme}</span>}
                 </span>
-                <span className="shrink-0 text-right font-medium text-slate-900">
-                  {euro(p.min)} – {euro(p.max)}
-                  <span className="block text-xs font-normal text-slate-500">
+                <span className="shrink-0 text-right font-medium text-stein-900">
+                  {euro(p.min)} bis {euro(p.max)}
+                  <span className="block text-xs font-normal text-stein-500">
                     {p.eigener_preis ? 'euer Preis' : p.quelle === 'findasponsor' ? 'Marktwert (findasponsor)' : 'Schätzung'}
                   </span>
                 </span>
@@ -127,13 +137,13 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
             ))}
           </ul>
           {potenzial.vergebene_pakete.length > 0 && (
-            <p className="mt-3 text-xs text-slate-500">Schon vergeben (nicht mitgezählt): {potenzial.vergebene_pakete.map((v) => v.name).join(', ')}</p>
+            <p className="mt-3 text-xs text-stein-500">Schon vergeben (nicht mitgezählt): {potenzial.vergebene_pakete.map((v) => v.name).join(', ')}</p>
           )}
-          <button className="mt-2 text-xs text-teal-800 underline" onClick={() => setAlleAnnahmen(!alleAnnahmen)}>
+          <button className="mt-2 text-xs text-rasen-800 underline" onClick={() => setAlleAnnahmen(!alleAnnahmen)}>
             {alleAnnahmen ? 'Annahmen ausblenden' : 'Wie rechnen wir?'}
           </button>
           {alleAnnahmen && (
-            <ul className="mt-2 list-disc pl-5 text-xs text-slate-600">
+            <ul className="mt-2 list-disc pl-5 text-xs text-stein-600">
               {potenzial.annahmen.map((a) => <li key={a}>{a}</li>)}
               <li>Je Paket wird das mittlere Band der Katalogspanne gezählt.</li>
             </ul>
@@ -158,8 +168,8 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
             <option value="">Jeder Status</option>
             {Object.entries(STATUS_TEXT).map(([w, t]) => <option key={w} value={w}>{t}</option>)}
           </select>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" className="accent-teal-700" checked={nurRecherchiert} onChange={(e) => setNurRecherchiert(e.target.checked)} />
+          <label className="flex items-center gap-2 text-sm text-stein-700">
+            <input type="checkbox" className="accent-rasen-700" checked={nurRecherchiert} onChange={(e) => setNurRecherchiert(e.target.checked)} />
             nur geprüfte
           </label>
           <span className="sm:ml-auto">
@@ -180,26 +190,26 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
                     onMouseEnter={() => setMarkiert(k.id)}
                     onMouseLeave={() => setMarkiert(null)}
                     className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
-                      markiert === k.id ? 'border-teal-600 bg-teal-50/50' : 'border-slate-200 hover:border-slate-300'
+                      markiert === k.id ? 'border-rasen-600 bg-rasen-50/50' : 'border-stein-200 hover:border-stein-300'
                     }`}
                   >
                     <ScoreBadge score={geprueft ? k.score : k.vorfilter_score} vorlaeufig={!geprueft} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium text-slate-900">{k.unternehmen.name}</span>
-                      <span className="block text-xs text-slate-500">
-                        {k.unternehmen.branche} · {k.entfernung_km.toLocaleString('de-DE')} km
-                        {k.status !== 'neu' && ` · ${STATUS_TEXT[k.status]}`}
+                      <span className="block truncate font-medium text-stein-900">{k.unternehmen.name}</span>
+                      <span className="block text-xs text-stein-500">
+                        {k.unternehmen.branche}, {k.entfernung_km.toLocaleString('de-DE')} km
+                        {k.status !== 'neu' && `, ${STATUS_TEXT[k.status]}`}
                       </span>
-                      {geprueft && k.gruende[0] && <span className="mt-1 line-clamp-2 block text-xs text-slate-600">{k.gruende[0].text}</span>}
-                      {k.recherche_status === 'laeuft' && <span className="mt-1 block text-xs text-teal-700">wird recherchiert …</span>}
-                      {k.recherche_status === 'wartet' && <span className="mt-1 block text-xs text-slate-400">in der Warteschlange</span>}
+                      {geprueft && k.gruende[0] && <span className="mt-1 line-clamp-2 block text-xs text-stein-600">{k.gruende[0].text}</span>}
+                      {k.recherche_status === 'laeuft' && <span className="mt-1 block text-xs text-rasen-700">wird recherchiert …</span>}
+                      {k.recherche_status === 'wartet' && <span className="mt-1 block text-xs text-stein-400">in der Warteschlange</span>}
                       {k.recherche_status === 'fehler' && <span className="mt-1 block text-xs text-red-700">Recherche fehlgeschlagen</span>}
                     </span>
                   </button>
                 </li>
               )
             })}
-            {sichtbar.length === 0 && <li className="text-sm text-slate-500">Keine Kandidaten für diesen Filter.</li>}
+            {sichtbar.length === 0 && <li className="text-sm text-stein-500">Keine Kandidaten für diesen Filter.</li>}
           </ul>
           <div className="h-[360px] lg:col-span-3 lg:h-[560px]">
             {verein.lat != null && verein.lon != null ? (
@@ -211,7 +221,7 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
                 onOeffnen={onOeffnen}
               />
             ) : (
-              <p className="text-sm text-slate-500">Keine Koordinaten für den Verein.</p>
+              <p className="text-sm text-stein-500">Keine Koordinaten für den Verein.</p>
             )}
           </div>
         </div>
@@ -221,11 +231,3 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
   )
 }
 
-function Kennzahl({ wert, text }: { wert: string; text: string }) {
-  return (
-    <div className="rounded-lg bg-white/10 px-3 py-2">
-      <p className="text-xl font-semibold">{wert}</p>
-      <p className="text-xs text-teal-100">{text}</p>
-    </div>
-  )
-}

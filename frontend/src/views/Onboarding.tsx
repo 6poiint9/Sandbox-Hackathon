@@ -113,8 +113,8 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
   if (!vorschlag) {
     return (
       <div className="mx-auto max-w-xl">
-        <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">Wie viel Sponsoring steckt in eurem Verein?</h1>
-        <p className="mt-2 text-slate-600">
+        <h1 className="text-2xl font-semibold text-stein-900 sm:text-3xl">Wie viel Sponsoring steckt in eurem Verein?</h1>
+        <p className="mt-2 text-stein-600">
           Nur eure Website eingeben – wir lesen euer Profil und eure Sponsoren aus, finden passende Betriebe rund um eure Sportstätte und zeigen, mit welchem Angebot ihr sie ansprecht.
         </p>
         <Karte className="mt-6">
@@ -137,12 +137,12 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Stimmt das so?</h1>
-        <p className="mt-1 text-slate-600">Wir haben eure Website ausgelesen. Bitte kurz prüfen und ergänzen – leere Felder haben wir nicht gefunden.</p>
+        <h1 className="text-2xl font-semibold text-stein-900">Stimmt das so?</h1>
+        <p className="mt-1 text-stein-600">Wir haben eure Website ausgelesen. Bitte kurz prüfen und ergänzen – leere Felder haben wir nicht gefunden.</p>
       </div>
 
       {vorschlag.hinweise.length > 0 && (
-        <ul className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+        <ul className="rounded-lg border border-signal-200 bg-signal-50 px-4 py-2 text-sm text-signal-900">
           {vorschlag.hinweise.map((h) => <li key={h}>{h}</li>)}
         </ul>
       )}
@@ -163,10 +163,10 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
         </div>
         {vorschlag.mannschaften.length > 0 && (
           <div className="mt-4">
-            <p className="mb-2 text-sm font-medium text-slate-700">Mannschaften</p>
+            <p className="mb-2 text-sm font-medium text-stein-700">Mannschaften</p>
             <div className="flex flex-wrap gap-2">
               {vorschlag.mannschaften.map((m) => (
-                <span key={m.name} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
+                <span key={m.name} className="rounded-full bg-stein-100 px-3 py-1 text-xs text-stein-700">
                   {m.name}{m.spielklasse ? ` · ${m.spielklasse}` : ''}
                 </span>
               ))}
@@ -174,30 +174,30 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
           </div>
         )}
         {vorschlag.veranstaltungen.length > 0 && (
-          <p className="mt-3 text-sm text-slate-600">Veranstaltungen: {vorschlag.veranstaltungen.join(', ')}</p>
+          <p className="mt-3 text-sm text-stein-600">Veranstaltungen: {vorschlag.veranstaltungen.join(', ')}</p>
         )}
       </Karte>
 
       <Karte titel={`Bestehende Sponsoren (${sponsoren.length})`}>
-        <p className="mb-3 text-sm text-slate-600">
-          Von eurer Website erkannt – aus dem Text und aus den Logos{vorschlag.sponsorenseite && <> auf <a className="text-teal-800 underline" href={vorschlag.sponsorenseite} target="_blank" rel="noreferrer">eurer Sponsorenseite</a></>}. Diese Unternehmen schlagen wir nicht noch einmal vor.
+        <p className="mb-3 text-sm text-stein-600">
+          Von eurer Website erkannt – aus dem Text und aus den Logos{vorschlag.sponsorenseite && <> auf <a className="text-rasen-800 underline" href={vorschlag.sponsorenseite} target="_blank" rel="noreferrer">eurer Sponsorenseite</a></>}. Diese Unternehmen schlagen wir nicht noch einmal vor.
         </p>
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-stein-100">
           {sponsoren.map((s, i) => (
             <li key={`${s.firma}-${i}`} className="flex items-center justify-between gap-3 py-2 text-sm">
               <span className="flex min-w-0 items-center gap-3">
                 {s.logo_url ? (
-                  <img src={s.logo_url} alt="" className="h-8 w-14 shrink-0 rounded border border-slate-100 bg-white object-contain" loading="lazy" />
+                  <img src={s.logo_url} alt="" className="h-8 w-14 shrink-0 rounded border border-stein-100 bg-white object-contain" loading="lazy" />
                 ) : (
                   <span className="h-8 w-14 shrink-0" />
                 )}
                 <span className="min-w-0">
-                  <span className="font-medium text-slate-800">{s.firma}</span>
-                  {s.gegenleistung_text && <span className="text-slate-500"> – {s.gegenleistung_text}</span>}
-                  {s.quelle === 'logo' && <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] uppercase text-slate-500">aus Logo</span>}
+                  <span className="font-medium text-stein-800">{s.firma}</span>
+                  {s.gegenleistung_text && <span className="text-stein-500"> – {s.gegenleistung_text}</span>}
+                  {s.quelle === 'logo' && <span className="ml-2 rounded bg-stein-100 px-1.5 py-0.5 text-xs text-stein-500">aus Logo</span>}
                 </span>
               </span>
-              <button className="text-xs text-slate-500 hover:text-red-700" onClick={() => setSponsoren(sponsoren.filter((_, j) => j !== i))}>
+              <button className="text-xs text-stein-500 hover:text-red-700" onClick={() => setSponsoren(sponsoren.filter((_, j) => j !== i))}>
                 entfernen
               </button>
             </li>
@@ -209,34 +209,34 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
             Hinzufügen
           </Knopf>
         </div>
-        <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm">
-          <p className="font-medium text-slate-700">Oder eure Sponsorenliste hochladen (CSV)</p>
-          <p className="mb-2 text-xs text-slate-500">
+        <div className="mt-4 rounded-lg bg-stein-50 p-3 text-sm">
+          <p className="font-medium text-stein-700">Oder eure Sponsorenliste hochladen (CSV)</p>
+          <p className="mb-2 text-xs text-stein-500">
             Spalten: firma; gegenleistung; betrag_eur; laufzeit_bis.{' '}
-            <a className="text-teal-800 underline" href="https://github.com/6poiint9/Sandbox-Hackathon/blob/main/docs/vorlage-bestandssponsoren.csv" target="_blank" rel="noreferrer">Vorlage ansehen</a>
+            <a className="text-rasen-800 underline" href="https://github.com/6poiint9/Sandbox-Hackathon/blob/main/docs/vorlage-bestandssponsoren.csv" target="_blank" rel="noreferrer">Vorlage ansehen</a>
           </p>
           <input type="file" accept=".csv,text/csv" onChange={(e) => setCsv(e.target.files?.[0] ?? null)} className="text-sm" />
         </div>
       </Karte>
 
       <Karte titel="Was könnt ihr Sponsoren anbieten?">
-        <p className="mb-3 text-sm text-slate-600">Haken setzen, was es bei euch gibt. Was schon vergeben ist, zählt nicht zum offenen Potenzial.</p>
+        <p className="mb-3 text-sm text-stein-600">Haken setzen, was es bei euch gibt. Was schon vergeben ist, zählt nicht zum offenen Potenzial.</p>
         <div className="space-y-5">
           {Object.entries(kategorien).map(([kategorie, eintraege]) => (
             <div key={kategorie}>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{kategorie}</p>
+              <p className="mb-2 text-sm font-semibold text-stein-700">{kategorie}</p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {eintraege.map((e) => {
                   const wert = inventar[e.id] ?? 'nein'
                   return (
-                    <div key={e.id} className={`rounded-lg border px-3 py-2 text-sm ${wert === 'nein' ? 'border-slate-200' : 'border-teal-600/40 bg-teal-50/40'}`}>
+                    <div key={e.id} className={`rounded-lg border px-3 py-2 text-sm ${wert === 'nein' ? 'border-stein-200' : 'border-rasen-600/40 bg-rasen-50/40'}`}>
                       <label className="flex cursor-pointer items-start gap-2">
-                        <input type="checkbox" className="mt-0.5 accent-teal-700" checked={wert !== 'nein'} onChange={(ev) => inventarSetzen(e.id, ev.target.checked ? 'frei' : 'nein')} />
-                        <span className="text-slate-800">{e.name}</span>
+                        <input type="checkbox" className="mt-0.5 accent-rasen-700" checked={wert !== 'nein'} onChange={(ev) => inventarSetzen(e.id, ev.target.checked ? 'frei' : 'nein')} />
+                        <span className="text-stein-800">{e.name}</span>
                       </label>
                       {wert !== 'nein' && (
-                        <label className="ml-6 mt-1 flex cursor-pointer items-center gap-2 text-xs text-slate-600">
-                          <input type="checkbox" className="accent-slate-500" checked={wert === 'vergeben'} onChange={(ev) => inventarSetzen(e.id, ev.target.checked ? 'vergeben' : 'frei')} />
+                        <label className="ml-6 mt-1 flex cursor-pointer items-center gap-2 text-xs text-stein-600">
+                          <input type="checkbox" className="accent-stein-500" checked={wert === 'vergeben'} onChange={(ev) => inventarSetzen(e.id, ev.target.checked ? 'vergeben' : 'frei')} />
                           schon vergeben
                         </label>
                       )}
@@ -249,7 +249,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
         </div>
       </Karte>
 
-      <div className="sticky bottom-0 -mx-4 flex flex-col gap-3 border-t border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center">
+      <div className="sticky bottom-0 -mx-4 flex flex-col gap-3 border-t border-stein-200 bg-stein-50/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center">
         <Knopf onClick={potenzialBerechnen} disabled={!!laedt}>Potenzialanalyse starten</Knopf>
         <Knopf art="leise" onClick={() => setVorschlag(null)} disabled={!!laedt}>Andere Website</Knopf>
         {laedt && <Lader text={laedt} />}

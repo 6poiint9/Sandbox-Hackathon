@@ -1,10 +1,109 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
+@import "@fontsource/barlow/400.css";
+@import "@fontsource/barlow/500.css";
+@import "@fontsource/barlow/600.css";
+@import "@fontsource/barlow-condensed/600.css";
+@import "@fontsource/barlow-condensed/700.css";
 
+/*
+ * Rasenplatz: Kreide, Tafelgrün, Rasen, Signalgelb, Tinte, Kreidelinie.
+ * Barlow (DIN-Anmutung wie Vereinsschilder), Barlow Condensed für Tafel und Überschriften.
+ */
 @theme {
-  --color-akzent: #0f766e;
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
+  --font-tafel: "Barlow Condensed", "Barlow", ui-sans-serif, sans-serif;
+
+  --color-kreide: #f5f6f1;
+  --color-tafel: #173b26;
+  --color-tinte: #1e2420;
+  --color-linie: #d5dacf;
+  --color-akzent: #2f6b3f;
+
+  /* Rasen: Hauptfarbe (600 = Rasen, 900 = Tafelgrün) */
+  --color-rasen-50: #eef4ef;
+  --color-rasen-100: #d7e6da;
+  --color-rasen-200: #b0cdb6;
+  --color-rasen-300: #84b08e;
+  --color-rasen-400: #5a9268;
+  --color-rasen-500: #3f7a4e;
+  --color-rasen-600: #2f6b3f;
+  --color-rasen-700: #255a34;
+  --color-rasen-800: #1d4a2b;
+  --color-rasen-900: #173b26;
+  --color-rasen-950: #0e2617;
+
+  /* Stein: Neutrale mit leichtem Grünstich (50 = Kreide, 200 = Kreidelinie, 900 = Tinte) */
+  --color-stein-50: #f5f6f1;
+  --color-stein-100: #eceee7;
+  --color-stein-200: #d5dacf;
+  --color-stein-300: #bac1b5;
+  --color-stein-400: #8e978b;
+  --color-stein-500: #6a7367;
+  --color-stein-600: #535b51;
+  --color-stein-700: #3e453d;
+  --color-stein-800: #2b312b;
+  --color-stein-900: #1e2420;
+  --color-stein-950: #121612;
+
+  /* Signal: Klappziffern, Hinweise, mittlerer Score (400 = Signalgelb) */
+  --color-signal-50: #fef9e7;
+  --color-signal-100: #fcf0c2;
+  --color-signal-200: #f9e28a;
+  --color-signal-300: #f6d257;
+  --color-signal-400: #f2c12e;
+  --color-signal-500: #e0ab16;
+  --color-signal-600: #b9870e;
+  --color-signal-700: #8f660f;
+  --color-signal-800: #6e4f12;
+  --color-signal-900: #5a4113;
+  --color-signal-950: #33240a;
 }
 
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  @apply bg-kreide font-sans text-tinte antialiased;
+  font-feature-settings: "tnum" 1; /* Ziffern gleich breit, Beträge stehen sauber untereinander */
+}
+
+h1,
+h2,
+h3 {
+  @apply font-tafel;
+  letter-spacing: 0.01em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-signal-400);
+  outline-offset: 2px;
+}
+
+/* Kartenkacheln gedämpft, damit Markierungen und Palette führen */
+.leaflet-tile-pane {
+  filter: saturate(0.35) contrast(0.95) brightness(1.04);
+}
+
+/* Klappziffer: einmaliges Umklappen beim Laden, sonst ruhig */
+@keyframes klappen {
+  0% {
+    transform: rotateX(90deg);
+    opacity: 0.2;
+  }
+  60% {
+    transform: rotateX(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+
+.klappziffer {
+  animation: klappen 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transform-origin: 50% 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .klappziffer {
+    animation: none;
+  }
 }

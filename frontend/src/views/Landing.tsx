@@ -47,19 +47,19 @@ export default function Landing({ onStart }: { onStart: () => void }) {
   return (
     <div className="-mx-4 -my-6 sm:-my-8">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-teal-800 to-teal-950 px-4 py-14 text-white sm:py-20">
+      <section className="bg-gradient-to-br from-rasen-800 to-rasen-950 px-4 py-14 text-white sm:py-20">
         <div className="mx-auto max-w-4xl">
-          <p className="text-sm font-medium uppercase tracking-wide text-teal-200">Für Sportvereine und Fördervereine</p>
+          <p className="text-sm font-medium uppercase tracking-wide text-rasen-200">Für Sportvereine und Fördervereine</p>
           <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-5xl">Neue Sponsoren statt neuer Excel-Listen.</h1>
-          <p className="mt-4 max-w-2xl text-lg text-teal-50">
+          <p className="mt-4 max-w-2xl text-lg text-rasen-50">
             Sponsorenkompass zeigt eurem Verein in wenigen Minuten, wie viel Sponsoring-Potenzial in ihm steckt, welche Betriebe um die Ecke passen – und wie ihr sie persönlich ansprecht.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button onClick={onStart} className="rounded-lg bg-white px-5 py-3 font-semibold text-teal-900 hover:bg-teal-50">Kostenlos ausprobieren</button>
+            <button onClick={onStart} className="rounded-lg bg-white px-5 py-3 font-semibold text-rasen-900 hover:bg-rasen-50">Kostenlos ausprobieren</button>
             <a href="#anmelden" onClick={(e) => { e.preventDefault(); document.getElementById('anmelden')?.scrollIntoView({ behavior: 'smooth' }) }}
               className="rounded-lg border border-white/40 px-5 py-3 text-center font-semibold text-white hover:bg-white/10">Pilotverein werden</a>
           </div>
-          <p className="mt-6 text-sm text-teal-100">Nur die Vereinswebsite eingeben – kein Konto nötig.</p>
+          <p className="mt-6 text-sm text-rasen-100">Nur die Vereinswebsite eingeben – kein Konto nötig.</p>
         </div>
       </section>
 
@@ -72,8 +72,8 @@ export default function Landing({ onStart }: { onStart: () => void }) {
             ['Unklarer Wert', 'Was ist eine Bande wert, was ein Trikot? Viele Vereine verkaufen sich unter Wert – oder gar nicht.'],
           ].map(([t, x]) => (
             <div key={t}>
-              <h3 className="font-semibold text-slate-900">{t}</h3>
-              <p className="mt-2 text-sm text-slate-600">{x}</p>
+              <h3 className="font-semibold text-stein-900">{t}</h3>
+              <p className="mt-2 text-sm text-stein-600">{x}</p>
             </div>
           ))}
         </div>
@@ -82,13 +82,13 @@ export default function Landing({ onStart }: { onStart: () => void }) {
       {/* So funktioniert's */}
       <section className="bg-white px-4 py-14">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-2xl font-semibold text-slate-900">So funktioniert's</h2>
+          <h2 className="text-2xl font-semibold text-stein-900">So funktioniert's</h2>
           <ol className="mt-8 grid gap-6 md:grid-cols-4">
             {SCHRITTE.map(([t, x], i) => (
               <li key={t}>
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-700 font-semibold text-white">{i + 1}</span>
-                <h3 className="mt-3 font-semibold text-slate-900">{t}</h3>
-                <p className="mt-1 text-sm text-slate-600">{x}</p>
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-rasen-700 font-semibold text-white">{i + 1}</span>
+                <h3 className="mt-3 font-semibold text-stein-900">{t}</h3>
+                <p className="mt-1 text-sm text-stein-600">{x}</p>
               </li>
             ))}
           </ol>
@@ -98,16 +98,16 @@ export default function Landing({ onStart }: { onStart: () => void }) {
       {/* Funktionen */}
       <section className="px-4 py-14">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-2xl font-semibold text-slate-900">Alles für die Sponsorengewinnung an einem Ort</h2>
+          <h2 className="text-2xl font-semibold text-stein-900">Alles für die Sponsorengewinnung an einem Ort</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FUNKTIONEN.map(([t, x]) => (
-              <div key={t} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="font-semibold text-slate-900">{t}</h3>
-                <p className="mt-1 text-sm text-slate-600">{x}</p>
+              <div key={t} className="rounded-xl border border-stein-200 bg-white p-5 shadow-sm">
+                <h3 className="font-semibold text-stein-900">{t}</h3>
+                <p className="mt-1 text-sm text-stein-600">{x}</p>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-sm text-slate-500">
+          <p className="mt-6 text-sm text-stein-500">
             Unterschied zu Sponsoring-Marktplätzen: Die warten, bis sich Unternehmen selbst anmelden. Sponsorenkompass sucht aktiv die Betriebe, die euren Verein noch nicht kennen.
           </p>
         </div>
@@ -116,13 +116,13 @@ export default function Landing({ onStart }: { onStart: () => void }) {
       {/* Anmeldung */}
       <section id="anmelden" className="bg-white px-4 py-14">
         <div className="mx-auto max-w-xl">
-          <h2 className="text-2xl font-semibold text-slate-900">Pilotverein werden</h2>
-          <p className="mt-2 text-slate-600">
+          <h2 className="text-2xl font-semibold text-stein-900">Pilotverein werden</h2>
+          <p className="mt-2 text-stein-600">
             In der Pilotphase kostenlos. Wir richten Sponsorenkompass mit euch ein und lernen von euren Erfahrungen.
             {zaehler && zaehler.anmeldungen > 0 && <> Bereits <strong>{zaehler.anmeldungen}</strong> {zaehler.anmeldungen === 1 ? 'Anmeldung' : 'Anmeldungen'}.</>}
           </p>
           {fertig ? (
-            <p className="mt-6 rounded-lg bg-teal-50 px-4 py-3 text-teal-900">Danke! Wir melden uns in den nächsten Tagen bei euch.</p>
+            <p className="mt-6 rounded-lg bg-rasen-50 px-4 py-3 text-rasen-900">Danke! Wir melden uns in den nächsten Tagen bei euch.</p>
           ) : (
             <form onSubmit={anmelden} className="mt-6 space-y-3">
               <input type="email" required className={eingabe} placeholder="E-Mail" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -135,19 +135,19 @@ export default function Landing({ onStart }: { onStart: () => void }) {
                 <option>Verband / Sportkreis</option>
                 <option>Sonstiges</option>
               </select>
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input type="checkbox" className="accent-teal-700" checked={pilot} onChange={(e) => setPilot(e.target.checked)} />
+              <label className="flex items-center gap-2 text-sm text-stein-700">
+                <input type="checkbox" className="accent-rasen-700" checked={pilot} onChange={(e) => setPilot(e.target.checked)} />
                 Wir möchten als Pilotverein mitmachen
               </label>
               <Knopf type="submit">Anmelden</Knopf>
               <Fehler text={fehler} />
-              <p className="text-xs text-slate-500">Wir nutzen eure Angaben nur, um euch zu Sponsorenkompass zu kontaktieren. Abmeldung jederzeit per E-Mail.</p>
+              <p className="text-xs text-stein-500">Wir nutzen eure Angaben nur, um euch zu Sponsorenkompass zu kontaktieren. Abmeldung jederzeit per E-Mail.</p>
             </form>
           )}
         </div>
       </section>
 
-      <footer className="px-4 py-8 text-center text-xs text-slate-500">
+      <footer className="px-4 py-8 text-center text-xs text-stein-500">
         Sponsorenkompass · entstanden beim Cursor × Sandbox Founders Hackathon, Stuttgart 2026
       </footer>
     </div>
