@@ -109,8 +109,42 @@ export type Verein = {
   zuschauer_schnitt: number | null
   veranstaltungen: string[]
   radius_km: number
+  ziel_eur: number | null
   luecken: { branche: string; betriebe: number }[]
   betriebe_im_umkreis: number | null
+}
+
+// Finanzierungsplan (backend/app/services/plan.py)
+export type PlanStatus = 'ohne_ziel' | 'erreicht' | 'erreichbar' | 'knapp' | 'ueber_potenzial'
+
+export interface PlanKandidat {
+  kandidat_id: number
+  name: string
+  score: number | null
+  geprueft: boolean
+}
+
+export interface PlanZeile {
+  katalog_id: string
+  name: string
+  anzahl: number
+  min: number
+  max: number
+  kandidaten: PlanKandidat[]
+}
+
+export interface Finanzierungsplan {
+  ziel_eur: number | null
+  bestand_eur: number
+  luecke_eur: number | null
+  potenzial_min: number
+  potenzial_max: number
+  status: PlanStatus
+  zeilen: PlanZeile[]
+  summe_min: number
+  summe_max: number
+  neue_sponsoren: number
+  hebel: string[]
 }
 
 export type KatalogEintrag = {

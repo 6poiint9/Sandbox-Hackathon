@@ -12,7 +12,7 @@ function PasswortFeld({ wert, setWert, neu, label = 'Passwort' }: { wert: string
       <div className="flex gap-2">
         <input type={sichtbar ? 'text' : 'password'} required minLength={neu ? 12 : undefined} maxLength={256}
           autoComplete={neu ? 'new-password' : 'current-password'} className={eingabe} value={wert} onChange={(e) => setWert(e.target.value)} />
-        <button type="button" className="shrink-0 rounded-lg border border-slate-300 px-3 text-xs text-slate-600 hover:bg-slate-50"
+        <button type="button" className="shrink-0 rounded-lg border border-stein-300 px-3 text-xs text-stein-600 hover:bg-stein-50"
           onClick={() => setSichtbar(!sichtbar)} aria-label={sichtbar ? 'Passwort verbergen' : 'Passwort anzeigen'}>
           {sichtbar ? 'Verbergen' : 'Zeigen'}
         </button>
@@ -47,8 +47,8 @@ export function Anmeldung({ hinweis, onAngemeldet }: { hinweis?: string; onAngem
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <h1 className="text-2xl font-semibold text-slate-900">{modus === 'anmelden' ? 'Anmelden' : 'Konto anlegen'}</h1>
-      <p className="text-slate-600">{hinweis ?? 'Mit Konto bleiben eure Analysen, Sponsoren und Assets gespeichert und sind nur für euch sichtbar.'}</p>
+      <h1 className="text-2xl font-semibold text-stein-900">{modus === 'anmelden' ? 'Anmelden' : 'Konto anlegen'}</h1>
+      <p className="text-stein-600">{hinweis ?? 'Mit Konto bleiben eure Analysen, Sponsoren und Assets gespeichert und sind nur für euch sichtbar.'}</p>
       <Karte>
         <form onSubmit={absenden} className="space-y-3">
           {modus === 'registrieren' && <Feld label="Name (optional)"><input className={eingabe} autoComplete="name" maxLength={100} value={name} onChange={(e) => setName(e.target.value)} /></Feld>}
@@ -58,15 +58,15 @@ export function Anmeldung({ hinweis, onAngemeldet }: { hinweis?: string; onAngem
           <Fehler text={fehler} />
         </form>
       </Karte>
-      <button className="text-sm text-teal-800 underline" onClick={() => { setModus(modus === 'anmelden' ? 'registrieren' : 'anmelden'); setFehler(null) }}>
+      <button className="text-sm text-rasen-800 underline" onClick={() => { setModus(modus === 'anmelden' ? 'registrieren' : 'anmelden'); setFehler(null) }}>
         {modus === 'anmelden' ? 'Noch kein Konto? Jetzt anlegen' : 'Schon ein Konto? Anmelden'}
       </button>
       {modus === 'registrieren' && (
-        <p className="text-xs text-slate-500">
-          Mit dem Anlegen des Kontos gilt unsere <a className="text-teal-800 underline" href="#/datenschutz">Datenschutzerklärung</a>.
+        <p className="text-xs text-stein-500">
+          Mit dem Anlegen des Kontos gilt unsere <a className="text-rasen-800 underline" href="#/datenschutz">Datenschutzerklärung</a>.
         </p>
       )}
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-stein-500">
         Sicherheit: Passwörter speichern wir nur als Argon2id-Hash und prüfen sie anonym gegen bekannte Datenlecks. Die Sitzung liegt in einem geschützten Cookie, das kein Skript lesen kann.
       </p>
     </div>
@@ -109,8 +109,8 @@ export default function KontoSeite({ konto, onVerein, onStart }: { konto: Konto 
     <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Mein Konto</h1>
-          <p className="text-slate-600">{konto.name ? `${konto.name} · ` : ''}{konto.email}</p>
+          <h1 className="text-2xl font-semibold text-stein-900">Mein Konto</h1>
+          <p className="text-stein-600">{konto.name ? `${konto.name}, ` : ''}{konto.email}</p>
         </div>
         <div className="flex gap-1">
           <Knopf art="leise" onClick={() => abmelden(false)}>Abmelden</Knopf>
@@ -118,16 +118,16 @@ export default function KontoSeite({ konto, onVerein, onStart }: { konto: Konto 
         </div>
       </div>
       <Karte titel="Meine Vereine">
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-stein-100">
           {vereine.map((v) => (
             <li key={v.id}>
-              <button onClick={() => onVerein(v.id)} className="flex w-full justify-between gap-3 py-3 text-left text-sm hover:bg-slate-50">
-                <span className="font-medium text-slate-900">{v.name}</span>
-                <span className="text-slate-500">{v.ort}{v.spielklasse ? ` · ${v.spielklasse}` : ''}</span>
+              <button onClick={() => onVerein(v.id)} className="flex w-full justify-between gap-3 py-3 text-left text-sm hover:bg-stein-50">
+                <span className="font-medium text-stein-900">{v.name}</span>
+                <span className="text-stein-500">{v.ort}{v.spielklasse ? `, ${v.spielklasse}` : ''}</span>
               </button>
             </li>
           ))}
-          {vereine.length === 0 && <li className="py-3 text-sm text-slate-500">Noch kein Verein im Konto.</li>}
+          {vereine.length === 0 && <li className="py-3 text-sm text-stein-500">Noch kein Verein im Konto.</li>}
         </ul>
         <div className="mt-3"><Knopf onClick={onStart}>Neue Potenzialanalyse</Knopf></div>
       </Karte>
@@ -136,7 +136,7 @@ export default function KontoSeite({ konto, onVerein, onStart }: { konto: Konto 
           <PasswortFeld wert={altPw} setWert={setAltPw} neu={false} label="Bisheriges Passwort" />
           <PasswortFeld wert={neuPw} setWert={setNeuPw} neu label="Neues Passwort" />
           <Knopf type="submit" art="sekundaer">Passwort ändern</Knopf>
-          {meldung && <p className="text-sm text-teal-800">{meldung}</p>}
+          {meldung && <p className="text-sm text-rasen-800">{meldung}</p>}
           <Fehler text={fehler} />
         </form>
       </Karte>

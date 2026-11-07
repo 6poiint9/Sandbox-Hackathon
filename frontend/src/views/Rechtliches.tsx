@@ -3,10 +3,10 @@ import { ANBIETER, AUFSICHT, HOSTING, STAND, hatPlatzhalter } from '../rechtlich
 
 function Seite({ titel, children }: { titel: string; children: ReactNode }) {
   return (
-    <article className="mx-auto max-w-3xl space-y-5 text-sm leading-relaxed text-slate-700">
-      <h1 className="text-2xl font-semibold text-slate-900">{titel}</h1>
+    <article className="mx-auto max-w-3xl space-y-5 text-sm leading-relaxed text-stein-700">
+      <h1 className="text-2xl font-semibold text-stein-900">{titel}</h1>
       {hatPlatzhalter() && (
-        <p className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
+        <p className="rounded-lg border border-signal-300 bg-signal-50 px-4 py-3 text-signal-900">
           Entwurf: Angaben in [eckigen Klammern] fehlen noch (Datei <code>frontend/src/rechtliches.ts</code>). Vor dem
           Livegang ausfüllen und rechtlich prüfen lassen.
         </p>
@@ -19,7 +19,7 @@ function Seite({ titel, children }: { titel: string; children: ReactNode }) {
 function Abschnitt({ titel, children }: { titel: string; children: ReactNode }) {
   return (
     <section className="space-y-2">
-      <h2 className="pt-2 text-base font-semibold text-slate-900">{titel}</h2>
+      <h2 className="pt-2 text-base font-semibold text-stein-900">{titel}</h2>
       {children}
     </section>
   )
@@ -80,7 +80,7 @@ export function Datenschutz() {
   const verantwortlich = `${ANBIETER.name}, ${ANBIETER.strasse}, ${ANBIETER.plzOrt}, E-Mail: ${ANBIETER.email}`
   return (
     <Seite titel="Datenschutzerklärung">
-      <p className="text-xs text-slate-500">Stand: {STAND}</p>
+      <p className="text-xs text-stein-500">Stand: {STAND}</p>
 
       <Abschnitt titel="1. Verantwortlicher">
         <p>{verantwortlich}</p>

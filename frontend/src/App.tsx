@@ -64,26 +64,26 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white">
+      <header className="border-b border-linie bg-kreide">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <button onClick={() => gehe('/')} className="flex items-center gap-2 font-semibold text-slate-900">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-700 text-white">✦</span>
+          <button onClick={() => gehe('/')} className="flex items-center gap-2 font-tafel text-2xl font-bold text-tafel">
+            <span aria-hidden="true" className="inline-block h-5 w-3 -skew-x-12 bg-signal-400" />
             Sponsorenkompass
           </button>
           {verein && konto && (
-            <nav className="flex gap-1 text-sm">
+            <nav className="flex gap-4 text-[15px]">
               <NavLink aktiv={ansicht.art === 'analyse' || ansicht.art === 'detail'} onClick={() => gehe(`/verein/${verein}`)}>Potenzialanalyse</NavLink>
               <NavLink aktiv={ansicht.art === 'sponsoren'} onClick={() => gehe(`/verein/${verein}/sponsoren`)}>Sponsoren</NavLink>
               <NavLink aktiv={ansicht.art === 'assets'} onClick={() => gehe(`/verein/${verein}/assets`)}>Assets</NavLink>
             </nav>
           )}
-          <span className="ml-auto hidden text-xs text-slate-500 sm:block">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</span>
+          <span className="ml-auto hidden text-xs text-stein-500 sm:block">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</span>
           <div className="ml-auto flex items-center gap-2 sm:ml-0">
-            <button onClick={() => gehe('/konto')} className="rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">
+            <button onClick={() => gehe('/konto')} className="px-2 py-1.5 text-sm font-medium text-stein-700 underline-offset-4 hover:underline">
               {konto ? 'Mein Konto' : 'Anmelden'}
             </button>
             {!verein && ansicht.art === 'landing' && (
-              <button onClick={() => gehe('/start')} className="rounded-lg bg-teal-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-800">Ausprobieren</button>
+              <button onClick={() => gehe('/start')} className="rounded-[4px] bg-signal-400 px-3 py-1.5 text-sm font-semibold text-tinte hover:bg-signal-300">Ausprobieren</button>
             )}
           </div>
         </div>
@@ -113,10 +113,10 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-slate-200 bg-white px-4 py-6 text-center text-xs text-slate-500">
-        <a className="hover:text-slate-800" href="#/impressum">Impressum</a>
+      <footer className="border-t border-linie bg-kreide px-4 py-6 text-center text-xs text-stein-500">
+        <a className="hover:text-stein-800" href="#/impressum">Impressum</a>
         <span className="mx-2">·</span>
-        <a className="hover:text-slate-800" href="#/datenschutz">Datenschutz</a>
+        <a className="hover:text-stein-800" href="#/datenschutz">Datenschutz</a>
         <span className="mx-2">·</span>
         Sponsorenkompass – entstanden beim Cursor × Sandbox Founders Hackathon, Stuttgart 2026
       </footer>
@@ -126,7 +126,7 @@ export default function App() {
 
 function NavLink({ aktiv, onClick, children }: { aktiv: boolean; onClick: () => void; children: string }) {
   return (
-    <button onClick={onClick} className={`rounded-md px-3 py-1.5 ${aktiv ? 'bg-teal-50 font-medium text-teal-900' : 'text-slate-600 hover:bg-slate-100'}`}>
+    <button onClick={onClick} className={`border-b-[3px] py-1.5 ${aktiv ? 'border-signal-400 font-semibold text-tinte' : 'border-transparent text-stein-600 hover:text-tinte'}`}>
       {children}
     </button>
   )

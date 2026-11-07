@@ -55,12 +55,12 @@ export default function Verlauf({
       <ol className="mt-3 space-y-2">
         {eintraege.map((a) => (
           <li key={a.id} className="flex gap-3 text-sm">
-            <span className="w-20 shrink-0 text-xs text-slate-500">{new Date(a.zeitpunkt).toLocaleDateString('de-DE')}</span>
-            <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">{AKTIVITAET_TEXT[a.art] ?? a.art}</span>
-            <span className="min-w-0 text-slate-700">{a.text}</span>
+            <span className="w-20 shrink-0 text-xs text-stein-500">{new Date(a.zeitpunkt).toLocaleDateString('de-DE')}</span>
+            <span className="shrink-0 rounded bg-stein-100 px-1.5 py-0.5 text-[11px] font-medium text-stein-600">{AKTIVITAET_TEXT[a.art] ?? a.art}</span>
+            <span className="min-w-0 text-stein-700">{a.text}</span>
           </li>
         ))}
-        {eintraege.length === 0 && <li className="text-xs text-slate-400">Noch keine Einträge.</li>}
+        {eintraege.length === 0 && <li className="text-xs text-stein-400">Noch keine Einträge.</li>}
       </ol>
     </div>
   )

@@ -46,17 +46,17 @@ export default function Benachrichtigung({
   }
 
   return (
-    <section className="rounded-xl border border-teal-200 bg-teal-50/60 p-4 sm:p-5">
+    <section className="rounded-md border border-rasen-200 bg-rasen-50/60 p-4 sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>{schritt && <Lader text={schritt} />}</div>
         {zustand.email_verfuegbar &&
           (zustand.benachrichtigung_email ? (
-            <p className="text-sm text-teal-900">
+            <p className="text-sm text-rasen-900">
               Wir schicken das Ergebnis an <strong>{zustand.benachrichtigung_email}</strong>, sobald alles fertig ist.
             </p>
           ) : (
             <form onSubmit={eintragen} className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <span className="text-sm text-slate-700">Nicht warten?</span>
+              <span className="text-sm text-stein-700">Nicht warten?</span>
               <input
                 type="email"
                 required
