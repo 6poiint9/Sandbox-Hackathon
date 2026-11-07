@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api, euro, STATUS_TEXT } from '../api'
+import Verlauf from '../components/Verlauf'
 import type { Ansprache, Kandidat, KandidatStatus } from '../api'
-import { Fehler, Karte, Knopf, Lader, ScoreBadge } from '../components/ui'
+import { Fehler, Feld, Karte, Knopf, Lader, ScoreBadge, eingabe } from '../components/ui'
 
 type Reiter = 'brief' | 'leitfaden' | 'email'
 
@@ -12,6 +13,7 @@ export default function Detail({ vereinId, kandidatId, onZurueck }: { vereinId: 
   const [laedt, setLaedt] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
   const [kopiert, setKopiert] = useState(false)
+  const [verlauf, setVerlauf] = useState(0)
 
   useEffect(() => {
     api.get<Kandidat[]>(`/vereine/${vereinId}/kandidaten`)
@@ -35,6 +37,7 @@ export default function Detail({ vereinId, kandidatId, onZurueck }: { vereinId: 
   async function statusSetzen(status: KandidatStatus) {
     try {
       setK(await api.patch<Kandidat>(`/kandidaten/${kandidatId}/status`, { status }))
+      setVerlauf((n) => n + 1)
     } catch (e) {
       setFehler((e as Error).message)
     }
@@ -178,7 +181,67 @@ export default function Detail({ vereinId, kandidatId, onZurueck }: { vereinId: 
           </Karte>
         </>
       )}
+      <CrmKarte k={k} vereinId={vereinId} onAenderung={(neu) => { setK(neu); setVerlauf((n) => n + 1) }} verlauf={verlauf} />
       <Fehler text={fehler} />
     </div>
+  )
+}
+
+function CrmKarte({ k, vereinId, onAenderung, verlauf }: { k: Kandidat; vereinId: number; onAenderung: (k: Kandidat) => void; verlauf: number }) {
+  const [f, setF] = useState({
+    ansprechpartner: k.ansprechpartner ?? '',
+    email: k.email ?? '',
+    telefon: k.telefon ?? '',
+    naechster_schritt: k.naechster_schritt ?? '',
+    wiedervorlage: k.wiedervorlage ?? '',
+    notiz: k.notiz ?? '',
+  })
+  const [meldung, setMeldung] = useState<string | null>(null)
+  const [betrag, setBetrag] = useState(k.paket_empfehlung.preis_eur ? String(k.paket_empfehlung.preis_eur.min) : '')
+  const set = (feld: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [feld]: e.target.value })
+
+  async function speichern() {
+    const daten = Object.fromEntries(Object.entries(f).map(([a, b]) => [a, b.trim() === '' ? null : b]))
+    await api.patch(`/kandidaten/${k.id}`, daten)
+    const alle = await api.get<Kandidat[]>(`/vereine/${vereinId}/kandidaten`)
+    const neu = alle.find((x) => x.id === k.id)
+    if (neu) onAenderung(neu)
+    setMeldung('Gespeichert ✓')
+  }
+
+  async function uebernehmen() {
+    await api.post(`/kandidaten/${k.id}/zum-sponsor`, { betrag_eur: betrag ? Number(betrag.replace(/\D/g, '')) : null })
+    const alle = await api.get<Kandidat[]>(`/vereine/${vereinId}/kandidaten`)
+    const neu = alle.find((x) => x.id === k.id)
+    if (neu) onAenderung(neu)
+    setMeldung('Als Sponsor übernommen ✓ – zu finden unter „Sponsoren“')
+  }
+
+  return (
+    <Karte titel="Kontakt und Nachverfolgung">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Feld label="Ansprechpartner"><input className={eingabe} value={f.ansprechpartner} onChange={set('ansprechpartner')} /></Feld>
+        <Feld label="E-Mail"><input type="email" className={eingabe} value={f.email} onChange={set('email')} /></Feld>
+        <Feld label="Telefon"><input className={eingabe} value={f.telefon} onChange={set('telefon')} /></Feld>
+        <Feld label="Nächster Schritt"><input className={eingabe} value={f.naechster_schritt} onChange={set('naechster_schritt')} placeholder="z. B. Nachfassen nach Brief" /></Feld>
+        <Feld label="Wiedervorlage am"><input type="date" className={eingabe} value={f.wiedervorlage} onChange={set('wiedervorlage')} /></Feld>
+        <Feld label="Notiz"><input className={eingabe} value={f.notiz} onChange={set('notiz')} /></Feld>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Knopf art="sekundaer" onClick={speichern}>Speichern</Knopf>
+        {meldung && <span className="text-sm text-slate-600">{meldung}</span>}
+      </div>
+      {k.status === 'zusage' && !k.sponsor_id && (
+        <div className="mt-4 flex flex-col gap-2 rounded-lg bg-teal-50 p-3 sm:flex-row sm:items-end">
+          <Feld label="Vereinbarter Betrag pro Saison (€)"><input className={eingabe} inputMode="numeric" value={betrag} onChange={(e) => setBetrag(e.target.value)} /></Feld>
+          <Knopf onClick={uebernehmen}>Als Sponsor übernehmen</Knopf>
+        </div>
+      )}
+      {k.sponsor_id && <p className="mt-3 text-sm text-teal-800">✓ Als Sponsor im Bestand.</p>}
+      <div className="mt-5">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Verlauf</p>
+        <Verlauf vereinId={vereinId} kandidatId={k.id} neuLaden={verlauf} />
+      </div>
+    </Karte>
   )
 }

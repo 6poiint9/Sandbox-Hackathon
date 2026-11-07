@@ -27,6 +27,7 @@ export const api = {
   post: <T>(pfad: string, daten?: unknown) => anfrage<T>(pfad, json('POST', daten ?? {})),
   put: <T>(pfad: string, daten: unknown) => anfrage<T>(pfad, json('PUT', daten)),
   patch: <T>(pfad: string, daten: unknown) => anfrage<T>(pfad, json('PATCH', daten)),
+  delete: (pfad: string) => anfrage<void>(pfad, { method: 'DELETE' }),
   upload: <T>(pfad: string, datei: File) => {
     const form = new FormData()
     form.append('datei', datei)
@@ -98,6 +99,8 @@ export type KatalogEintrag = {
   quelle: string
 }
 
+export type SponsorStatus = 'aktiv' | 'verlaengerung' | 'beendet'
+
 export type Sponsor = {
   id: number
   firma: string
@@ -106,8 +109,70 @@ export type Sponsor = {
   gegenleistung_text: string | null
   betrag_eur: number | null
   laufzeit_bis: string | null
+  ansprechpartner: string | null
+  email: string | null
+  telefon: string | null
+  status: SponsorStatus | null
+  naechster_schritt: string | null
+  wiedervorlage: string | null
+  logo_url: string | null
   notiz: string | null
 }
+
+export const SPONSOR_STATUS_TEXT: Record<SponsorStatus, string> = {
+  aktiv: 'Aktiv',
+  verlaengerung: 'Verlängerung offen',
+  beendet: 'Beendet',
+}
+
+export type AktivitaetArt = 'notiz' | 'anruf' | 'brief' | 'email' | 'treffen' | 'status' | 'vertrag'
+
+export type Aktivitaet = {
+  id: number
+  art: AktivitaetArt
+  text: string
+  zeitpunkt: string
+  sponsor_id: number | null
+  kandidat_id: number | null
+}
+
+export const AKTIVITAET_TEXT: Record<AktivitaetArt, string> = {
+  notiz: 'Notiz',
+  anruf: 'Anruf',
+  brief: 'Brief',
+  email: 'E-Mail',
+  treffen: 'Treffen',
+  status: 'Status',
+  vertrag: 'Vertrag',
+}
+
+export type Aufgabe = {
+  art: 'wiedervorlage' | 'vertragsende'
+  faellig: string
+  titel: string
+  text: string
+  sponsor_id: number | null
+  kandidat_id: number | null
+  ueberfaellig: boolean
+}
+
+export type AssetAnsicht = {
+  id: number
+  katalog_id: string
+  name: string
+  kategorie: string
+  gegenleistung: string
+  beschreibung: string | null
+  anzahl: number
+  belegt: number
+  frei: number
+  preis_eur: number | null
+  richtpreis: { min: number; max: number } | null
+  einnahmen_eur: number
+  vergaben: { id: number; sponsor_id: number; sponsor: string; anzahl: number; preis_eur: number | null; bis: string | null }[]
+}
+
+export const datum = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString('de-DE') : '–')
 
 export type Unternehmen = {
   id: number
@@ -141,6 +206,13 @@ export type Kandidat = {
   quellen: { url: string; titel: string | null }[]
   recherche_status: 'offen' | 'wartet' | 'laeuft' | 'fertig' | 'fehler'
   recherche_fehler: string | null
+  ansprechpartner: string | null
+  email: string | null
+  telefon: string | null
+  naechster_schritt: string | null
+  wiedervorlage: string | null
+  notiz: string | null
+  sponsor_id: number | null
   unternehmen: Unternehmen
 }
 
