@@ -39,6 +39,13 @@ SICHERHEITS_HEADER = {
     "Cross-Origin-Opener-Policy": "same-origin",
     "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
 }
+# Swagger UI (/docs) lädt Skript und Stil vom CDN und startet per Inline-Skript;
+# nur dafür eine gelockerte Richtlinie, alles andere bleibt bei default-src 'none'.
+DOCS_CSP = (
+    "default-src 'none'; frame-ancestors 'none'; "
+    "script-src https://cdn.jsdelivr.net 'unsafe-inline'; style-src https://cdn.jsdelivr.net; "
+    "img-src https://fastapi.tiangolo.com data:; connect-src 'self'"
+)
 
 
 @app.middleware("http")
@@ -51,6 +58,8 @@ async def csrf_und_header(request: Request, call_next):
         if request.headers.get(CSRF_HEADER) != "1" or (origin and origin.rstrip("/") not in erlaubt):
             return JSONResponse({"detail": "Anfrage abgelehnt (CSRF-Schutz)."}, status_code=403)
     antwort = await call_next(request)
+    if request.url.path == app.docs_url:
+        antwort.headers["Content-Security-Policy"] = DOCS_CSP
     for k, v in SICHERHEITS_HEADER.items():
         antwort.headers.setdefault(k, v)
     if settings.cookie_secure:
