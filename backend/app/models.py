@@ -17,6 +17,8 @@ class VereinBasis(SQLModel):
     mannschaften: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
     spielklasse: str | None = None
     mitglieder: int | None = None
+    mannschaften_anzahl: int | None = None  # alle Teams; bestimmt Trikot- und Ausrüstungsbedarf
+    jugend_anzahl: int | None = None  # davon Jugendteams (Jugendtrikots je Satz)
     zuschauer_schnitt: int | None = None
     zielgruppen: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     reichweite: dict = Field(default_factory=dict, sa_column=Column(JSON))

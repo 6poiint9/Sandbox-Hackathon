@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
 import type { KatalogEintrag } from '../api'
-import { eingabe } from './ui'
 
 /** Eine Leistung des Vereins im Onboarding: vorhanden? wie viele? davon vergeben? */
 export type Leistung = { haben: boolean; anzahl: number; vergeben: number }
 export const LEER: Leistung = { haben: false, anzahl: 1, vergeben: 0 }
+
+/** Nur hier ist eine Stückzahl sinnvoll (mehrere Banden, mehrere Banner). Alles andere gibt es einmal. */
+export const MIT_ANZAHL = new Set(['bande', 'banner_halle'])
 
 export function leistungKorrigieren(l: Leistung): Leistung {
   const anzahl = Math.max(1, Math.min(999, Math.round(l.anzahl) || 1))
@@ -21,12 +23,12 @@ export function richtwertText(e: KatalogEintrag) {
 
 /** Zahlenfeld mit −/+ – gut bedienbar auch auf dem Handy. */
 export function Stepper({ wert, min, max, label, onAendern }: { wert: number; min: number; max: number; label: string; onAendern: (n: number) => void }) {
-  const knopf = 'h-8 w-8 shrink-0 rounded-[4px] border border-stein-300 bg-white text-stein-700 hover:border-stein-500 disabled:opacity-40'
+  const knopf = 'h-7 w-7 shrink-0 rounded-[3px] border border-stein-300 bg-white text-stein-700 hover:border-stein-500 disabled:opacity-40'
   return (
     <div className="flex items-center gap-1">
       <button type="button" className={knopf} aria-label={`${label} verringern`} disabled={wert <= min} onClick={() => onAendern(wert - 1)}>−</button>
       <input type="number" inputMode="numeric" min={min} max={max} aria-label={label}
-        className={`${eingabe} w-14 px-1 py-1 text-center`} value={wert} onChange={(ev) => onAendern(Number(ev.target.value))} />
+        className="h-7 w-12 rounded-[3px] border border-stein-300 bg-white px-1 text-center text-sm focus:border-rasen-600 focus:outline-none focus:ring-2 focus:ring-rasen-600/20" value={wert} onChange={(ev) => onAendern(Number(ev.target.value))} />
       <button type="button" className={knopf} aria-label={`${label} erhöhen`} disabled={wert >= max} onClick={() => onAendern(wert + 1)}>+</button>
     </div>
   )
@@ -48,52 +50,52 @@ export default function LeistungsTabelle({
   }, [katalog])
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {Object.entries(gruppen).map(([kategorie, eintraege]) => {
         const anzahl = eintraege.filter((e) => werte[e.id]?.haben).length
         return (
-          <details key={kategorie} open className="group rounded-md border border-stein-200 bg-white">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold text-stein-800">
-              <span>{kategorie}</span>
-              <span className="flex items-center gap-3 text-xs font-normal text-stein-500">
-                {anzahl > 0 ? `${anzahl} ausgewählt` : 'nichts ausgewählt'}
-                <span className="transition-transform group-open:rotate-180" aria-hidden>▾</span>
-              </span>
-            </summary>
-            <div className="hidden border-t border-stein-200 bg-stein-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-stein-500 md:grid md:grid-cols-[1fr_11rem_8rem_8rem] md:gap-4">
-              <span>Leistung</span><span>Richtwert</span><span>Anzahl</span><span>davon vergeben</span>
+          <section key={kategorie}>
+            <div className="flex items-baseline justify-between gap-3 border-b border-linie pb-1.5">
+              <h3 className="text-xl font-semibold text-tinte">{kategorie}</h3>
+              <span className="text-sm text-stein-500">{anzahl > 0 ? `${anzahl} gewählt` : ''}</span>
             </div>
-            <ul className="divide-y divide-stein-100 border-t border-stein-200 md:border-t-0">
+            <ul className="mt-3 grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {eintraege.map((e) => {
                 const l = werte[e.id] ?? LEER
                 return (
-                  <li key={e.id} className={`grid gap-x-4 gap-y-2 px-4 py-3 md:grid-cols-[1fr_11rem_8rem_8rem] md:items-center ${l.haben ? 'bg-rasen-50/50' : ''}`}>
-                    <label className="flex min-w-0 cursor-pointer items-start gap-3">
+                  <li key={e.id} className={`rounded-md border p-3 ${l.haben ? 'border-tafel bg-rasen-50/70' : 'border-linie bg-white hover:border-stein-400'}`}>
+                    <label className="flex cursor-pointer items-start gap-3">
                       <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-rasen-700" checked={l.haben}
                         onChange={(ev) => onAendern(e.id, { haben: ev.target.checked })} />
                       <span className="min-w-0">
-                        <span className={`block text-sm ${l.haben ? 'font-semibold text-stein-900' : 'text-stein-800'}`}>{e.name}</span>
-                        <span className="block text-xs text-stein-500">{e.gegenleistung}</span>
+                        <span className={`block text-[15px] leading-snug ${l.haben ? 'font-semibold text-tinte' : 'text-stein-800'}`}>{e.name}</span>
+                        <span className="block text-xs text-stein-500">{richtwertText(e)}</span>
                       </span>
                     </label>
-                    <span className="pl-7 text-xs text-stein-500 md:pl-0">{richtwertText(e)}</span>
-                    {l.haben && (
-                      <>
-                        <div className="flex items-center justify-between gap-2 pl-7 md:block md:pl-0">
-                          <span className="text-xs text-stein-600 md:hidden">Anzahl</span>
+                    {l.haben && !MIT_ANZAHL.has(e.id) && (
+                      <label className="mt-2 flex cursor-pointer items-center gap-2 pl-7 text-sm text-stein-700">
+                        <input type="checkbox" className="h-3.5 w-3.5 accent-rasen-700" checked={l.vergeben > 0}
+                          onChange={(ev) => onAendern(e.id, { anzahl: 1, vergeben: ev.target.checked ? 1 : 0 })} />
+                        schon an einen Sponsor vergeben
+                      </label>
+                    )}
+                    {l.haben && MIT_ANZAHL.has(e.id) && (
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pl-7 text-sm text-stein-700">
+                        <span className="flex items-center gap-2">
+                          Anzahl
                           <Stepper wert={l.anzahl} min={1} max={999} label={`Anzahl ${e.name}`} onAendern={(n) => onAendern(e.id, { anzahl: n })} />
-                        </div>
-                        <div className="flex items-center justify-between gap-2 pl-7 md:block md:pl-0">
-                          <span className="text-xs text-stein-600 md:hidden">davon vergeben</span>
+                        </span>
+                        <span className="flex items-center gap-2">
+                          vergeben
                           <Stepper wert={l.vergeben} min={0} max={l.anzahl} label={`davon vergeben ${e.name}`} onAendern={(n) => onAendern(e.id, { vergeben: n })} />
-                        </div>
-                      </>
+                        </span>
+                      </div>
                     )}
                   </li>
                 )
               })}
             </ul>
-          </details>
+          </section>
         )
       })}
     </div>

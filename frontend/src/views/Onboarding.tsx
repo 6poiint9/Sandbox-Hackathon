@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { api } from '../api'
-import type { ErkannterSponsor, KatalogEintrag, ProfilVorschlag, Verein } from '../api'
+import { api, euro } from '../api'
+import type { ErkannterSponsor, KatalogEintrag, ProfilVorschlag, Verein, ZielVorschlag } from '../api'
 import LeistungsTabelle, { LEER, leistungKorrigieren } from '../components/LeistungsTabelle'
 import type { Leistung } from '../components/LeistungsTabelle'
 import { Fehler, Feld, Karte, Knopf, Lader, eingabe } from '../components/ui'
@@ -24,6 +24,10 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
   const [mitglieder, setMitglieder] = useState('')
   const [zuschauer, setZuschauer] = useState('')
   const [ziel, setZiel] = useState('')
+  const [zielSelbst, setZielSelbst] = useState(false) // Verein hat eigenes Ziel getippt: Vorschlag nicht überschreiben
+  const [zielRichtwert, setZielRichtwert] = useState<ZielVorschlag | null>(null)
+  const [teams, setTeams] = useState('')
+  const [jugendTeams, setJugendTeams] = useState('')
   const [radius, setRadius] = useState('10')
   const [sportstaette, setSportstaette] = useState('')
   const [sponsoren, setSponsoren] = useState<ErkannterSponsor[]>([])
@@ -48,6 +52,9 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       setSportstaette(v.sportstaette ?? '')
       setSpielklasse(v.spielklasse ?? '')
       setMitglieder(v.mitglieder ? String(v.mitglieder) : '')
+      const jugend = v.mannschaften.filter((m) => /jugend|junior|u\d|bambini/i.test(m.name)).length
+      setTeams(v.mannschaften.length ? String(v.mannschaften.length) : '')
+      setJugendTeams(v.mannschaften.length ? String(jugend) : '')
       setSponsoren(v.sponsoren)
       const wahl: InventarWahl = {}
       for (const id of STANDARD_VORHANDEN) wahl[id] = { haben: true, anzahl: 1, vergeben: 0 }
@@ -82,6 +89,8 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
         lon: sportstaette === (vorschlag.sportstaette ?? '') ? vorschlag.lon : null,
         sportarten: vorschlag.sportarten,
         mannschaften: vorschlag.mannschaften,
+        mannschaften_anzahl: teams ? Number(teams) : null,
+        jugend_anzahl: jugendTeams ? Number(jugendTeams) : null,
         spielklasse: spielklasse || null,
         mitglieder: mitglieder ? Number(mitglieder) : null,
         zuschauer_schnitt: zuschauer ? Number(zuschauer) : null,
@@ -111,6 +120,25 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       setLaedt(null)
     }
   }
+
+  // Richtwert fürs Ziel aus Mitgliedern und Spielklasse (Backend rechnet, siehe potenzial.marktwert)
+  useEffect(() => {
+    const n = Number(mitglieder)
+    if (!n) {
+      setZielRichtwert(null)
+      return
+    }
+    const t = setTimeout(() => {
+      const q = new URLSearchParams({ mitglieder: String(n), ...(spielklasse ? { spielklasse } : {}) })
+      api.get<ZielVorschlag | null>(`/richtwerte/ziel?${q}`)
+        .then((r) => {
+          setZielRichtwert(r)
+          if (r && !zielSelbst) setZiel(String(r.vorschlag))
+        })
+        .catch(() => setZielRichtwert(null))
+    }, 400)
+    return () => clearTimeout(t)
+  }, [mitglieder, spielklasse, zielSelbst])
 
   if (!vorschlag) {
     return (
@@ -157,8 +185,22 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
           <Feld label="Zuschauer je Heimspiel" hinweis="Schätzung reicht – beeinflusst die Richtpreise.">
             <input className={eingabe} inputMode="numeric" value={zuschauer} onChange={(e) => setZuschauer(e.target.value.replace(/\D/g, ''))} />
           </Feld>
-          <Feld label="Sponsoring-Ziel pro Saison in Euro" hinweis="Gesamtbetrag inklusive bestehender Sponsoren. Optional, lässt sich später an der Tafel ändern.">
-            <input className={eingabe} inputMode="numeric" placeholder="z. B. 10000" value={ziel} onChange={(e) => setZiel(e.target.value.replace(/\D/g, ''))} />
+          <Feld label="Mannschaften gesamt" hinweis="Alle Teams inklusive Jugend.">
+            <input className={eingabe} inputMode="numeric" value={teams} onChange={(e) => setTeams(e.target.value.replace(/\D/g, ''))} />
+          </Feld>
+          <Feld label="Davon Jugendmannschaften" hinweis="Bestimmt, wie viele Trikotsätze ihr Sponsoren anbieten könnt.">
+            <input className={eingabe} inputMode="numeric" value={jugendTeams} onChange={(e) => setJugendTeams(e.target.value.replace(/\D/g, ''))} />
+          </Feld>
+          <Feld
+            label="Sponsoring-Ziel pro Saison in Euro"
+            hinweis={
+              zielRichtwert
+                ? `Üblich für euren Verein: ${euro(zielRichtwert.min)} bis ${euro(zielRichtwert.max)} (${zielRichtwert.erklaerung}). Inklusive bestehender Sponsoren.`
+                : 'Gesamtbetrag inklusive bestehender Sponsoren. Mit der Mitgliederzahl schlagen wir einen Richtwert vor.'
+            }
+          >
+            <input className={eingabe} inputMode="numeric" placeholder="z. B. 5000" value={ziel}
+              onChange={(e) => { setZiel(e.target.value.replace(/\D/g, '')); setZielSelbst(true) }} />
           </Feld>
           <Feld label="Suchradius in km"><input className={eingabe} inputMode="numeric" value={radius} onChange={(e) => setRadius(e.target.value.replace(/\D/g, ''))} /></Feld>
           <Feld label="Sportstätte (Mittelpunkt der Suche)" hinweis="Aus der Website, nicht aus dem Impressum. Bitte prüfen.">

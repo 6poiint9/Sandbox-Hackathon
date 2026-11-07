@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
 
     # Anmeldung
+    # NUR für eine lokale Demo-Instanz: Anfragen von 127.0.0.1/::1 ohne Sitzung gelten als dieses Konto.
+    # Leer (Standard) = aus. Nie auf einem Server setzen.
+    demo_anmeldung_email: str = ""
     cookie_secure: bool = True  # auf localhost erlauben Browser Secure-Cookies auch ohne HTTPS
     sitzung_tage: int = 7  # absolute Laufzeit einer Sitzung
     sitzung_leerlauf_stunden: int = 24  # Abmeldung nach Inaktivität

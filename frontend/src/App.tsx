@@ -79,8 +79,7 @@ export default function App() {
               <NavLink aktiv={ansicht.art === 'angebot'} onClick={() => gehe(`/verein/${verein}/angebot`)}>Angebot</NavLink>
             </nav>
           )}
-          <span className="ml-auto hidden text-xs text-stein-500 sm:block">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</span>
-          <div className="ml-auto flex items-center gap-2 sm:ml-0">
+          <div className="ml-auto flex items-center gap-2">
             <button onClick={() => gehe('/konto')} className="px-2 py-1.5 text-sm font-medium text-stein-700 underline-offset-4 hover:underline">
               {konto ? 'Mein Konto' : 'Anmelden'}
             </button>

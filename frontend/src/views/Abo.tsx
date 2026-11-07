@@ -5,7 +5,7 @@ import { Fehler, Karte, Knopf } from '../components/ui'
 import { Anmeldung } from './KontoSeite'
 
 // Demo-Abo: zeigt das Geschäftsmodell, ohne echte Zahlung (README: Bezahlung nicht im MVP).
-const PREIS = '29 €'
+const PREIS = '169 €'
 const LEISTUNGEN = [
   'Alle passenden Betriebe im Umkreis statt nur der ersten drei',
   'Recherche mit Quellen und Paket-Empfehlung für jeden Betrieb',
@@ -43,7 +43,7 @@ export default function Abo({
       <Karte titel="Alle Betriebe freischalten">
         <p className="font-tafel text-5xl font-bold text-tafel">
           {PREIS}
-          <span className="ml-2 font-sans text-base font-medium text-stein-600">pro Monat, monatlich kündbar</span>
+          <span className="ml-2 font-sans text-base font-medium text-stein-600">pro Jahr</span>
         </p>
         <ul className="mt-5 space-y-2 text-[15px]">
           {LEISTUNGEN.map((l) => (
@@ -69,7 +69,7 @@ export default function Abo({
             <Karte titel="Abo aktivieren">
               <p className="mb-4 text-[15px] text-stein-700">Angemeldet als {konto.email}.</p>
               <Knopf art="signal" onClick={aktivieren} disabled={sendet}>
-                {sendet ? 'Wird aktiviert …' : `Abo für ${PREIS} aktivieren`}
+                {sendet ? 'Wird aktiviert …' : `Jahresabo für ${PREIS} aktivieren`}
               </Knopf>
               <div className="mt-3"><Fehler text={fehler} /></div>
             </Karte>

@@ -134,7 +134,7 @@ export default function Anzeigetafel({
           )}
         </Feld>
 
-        <Feld titel="Möglich" beschreibung="mit euren freien Paketen, Richtwert">
+        <Feld titel="Möglich" beschreibung="realistisch für euren Verein, Richtwert">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <Ziffern wert={plan.potenzial_min} verzoegerung={400} />
             <span className="font-tafel text-xl text-kreide/60 sm:text-2xl">bis</span>

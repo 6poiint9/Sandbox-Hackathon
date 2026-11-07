@@ -15,7 +15,7 @@ from sqlmodel import Session, select
 from app.models import Kandidat
 
 FREI_ANZAHL = 3
-ABO_PREIS_EUR = 29  # pro Monat, Demo ohne Zahlung
+ABO_PREIS_EUR = 169  # pro Jahr, Demo ohne Zahlung
 GESPERRT_NAME = "Gesperrter Betrieb"
 
 
