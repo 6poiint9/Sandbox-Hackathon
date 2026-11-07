@@ -47,6 +47,7 @@ class InventarPosten(SQLModel, table=True):
     vergeben_an: int | None = Field(default=None, foreign_key="sponsor.id")
     preis_eur: int | None = None  # eigener Preis je Einheit und Saison
     anzahl: int = 1  # Einheiten, z. B. Banden oder Trikotsätze
+    belegt_manuell: int = 0  # vergebene Einheiten ohne zugeordneten Sponsor (z. B. aus dem Onboarding)
     beschreibung: str | None = None
 
 

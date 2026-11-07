@@ -225,6 +225,7 @@ export type AssetAnsicht = {
   beschreibung: string | null
   anzahl: number
   belegt: number
+  belegt_manuell: number
   frei: number
   preis_eur: number | null
   richtpreis: { min: number; max: number } | null

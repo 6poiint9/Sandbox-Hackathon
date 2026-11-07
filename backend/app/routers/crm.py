@@ -256,6 +256,7 @@ class AssetAnsicht(BaseModel):
     beschreibung: str | None
     anzahl: int
     belegt: int
+    belegt_manuell: int
     frei: int
     preis_eur: int | None
     richtpreis: dict | None
@@ -279,7 +280,7 @@ def _asset_ansichten(session: Session, verein: Verein) -> list[AssetAnsicht]:
         ansichten.append(AssetAnsicht(
             id=p.id, katalog_id=p.katalog_id, name=e["name"], kategorie=e["kategorie"],
             gegenleistung=e["gegenleistung"], beschreibung=p.beschreibung, anzahl=p.anzahl or 1,
-            belegt=belegt, frei=max(0, (p.anzahl or 1) - belegt), preis_eur=p.preis_eur,
+            belegt=belegt, belegt_manuell=p.belegt_manuell or 0, frei=max(0, (p.anzahl or 1) - belegt), preis_eur=p.preis_eur,
             richtpreis=preis_band(p.katalog_id, verein),
             einnahmen_eur=sum(v.preis_eur or 0 for v in eigene),
             vergaben=[VergabeAnsicht(id=v.id, sponsor_id=v.sponsor_id, sponsor=namen.get(v.sponsor_id, "?"),
@@ -312,6 +313,7 @@ def asset_anlegen(verein_id: int, daten: AssetNeu, session: Session = Depends(ge
 
 class AssetAenderung(BaseModel):
     anzahl: int | None = None
+    belegt_manuell: int | None = None
     preis_eur: int | None = None
     beschreibung: str | None = None
     verfuegbar: bool | None = None

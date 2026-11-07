@@ -16,7 +16,7 @@ const FUNKTIONEN = [
   ['Kandidaten mit Quellen', 'Karte und Liste, Bewertung 0–100, jede Aussage belegt – nichts erfunden.'],
   ['Ansprache auf Knopfdruck', 'Brief, Leitfaden und E-Mail, die auf das Unternehmen eingehen.'],
   ['Sponsoren-CRM', 'Bestand, Verlauf, Wiedervorlagen und auslaufende Verträge im Blick.'],
-  ['Assets verwalten', 'Banden, Trikots, Social Media: wie viel vergeben ist, an wen, bis wann.'],
+  ['Angebot verwalten', 'Banden, Trikots, Social Media: wie viele es gibt, was vergeben ist, an wen, bis wann.'],
   ['Kein Massenversand', 'Ihr entscheidet und versendet selbst – Brief und Anruf zuerst.'],
 ]
 

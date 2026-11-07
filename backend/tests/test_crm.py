@@ -82,3 +82,13 @@ def test_landing_anmeldung(c):
     z = c.post("/interessenten", json={"email": "vorstand@fc.example", "rolle": "Kassenwart"}).json()
     assert z["anmeldungen"] == 1  # keine Dopplung
 
+
+
+def test_inventar_mit_anzahl_und_davon_vergeben(c):
+    r = c.put("/vereine/1/inventar", json=[{"katalog_id": "bande", "anzahl": 12, "belegt_manuell": 5}])
+    assert r.status_code == 200
+    a = c.get("/vereine/1/assets").json()[0]
+    assert (a["anzahl"], a["belegt"], a["frei"], a["belegt_manuell"]) == (12, 5, 7, 5)
+    p = c.get("/vereine/1/potenzial").json()
+    assert next(x for x in p["freie_pakete"] if x["katalog_id"] == "bande")["einheiten_frei"] == 7
+    assert c.put("/vereine/1/inventar", json=[{"katalog_id": "bande", "anzahl": 0}]).status_code == 422
