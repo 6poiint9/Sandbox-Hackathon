@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     google_genai_use_vertexai: bool = False
     google_cloud_project: str = ""
     google_cloud_location: str = "global"
+    google_api_key: str = ""  # Vertex-Express-Modus bzw. Places per API-Key
 
     # Modellnamen aus der Vertex-Modellliste vom 07.11.2026 (models.list()).
     llm_analyse_provider: str = "gemini"

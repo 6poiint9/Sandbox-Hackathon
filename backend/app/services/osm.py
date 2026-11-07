@@ -5,13 +5,21 @@ Fitness), übersetzt OSM-Tags in unsere Branchen (passend zu den
 `zielbranchen` im Katalog) und führt Duplikate zusammen.
 """
 
+from concurrent.futures import ThreadPoolExecutor
+
 import httpx
 from pydantic import BaseModel
 
 from app.providers.cache import zwischengespeichert
 from app.services.geo import USER_AGENT, entfernung_km
 
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+# Gemessen am 07.11.2026 (Shop-Abfrage, 10 km): Hauptserver 36 s, mail.ru 24 s;
+# private.coffee und kumi.systems liefen ins Zeitlimit.
+OVERPASS_SERVER = [
+    "https://overpass-api.de/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+]
+PARALLEL = 4  # höchstens 2 gleichzeitige Anfragen je Server
 
 GASTRO = "restaurant|cafe|pub|bar|biergarten|fast_food|ice_cream"
 AMENITY = f"{GASTRO}|bank|pharmacy|fuel|car_rental|driving_school|nursing_home|dentist|doctors|clinic"
@@ -112,37 +120,53 @@ def overpass_abfrage(filter_: str, lat: float, lon: float, radius_m: int) -> str
     return f"[out:json][timeout:60];{filter_}(around:{radius_m},{lat},{lon});out center tags;"
 
 
-def _kategorie_holen(name: str, filter_: str, lat: float, lon: float, radius_m: int) -> list[dict]:
+def _kategorie_holen(name: str, filter_: str, lat: float, lon: float, radius_m: int, start: int = 0) -> list[dict]:
     def holen() -> list[dict]:
-        antwort = httpx.post(
-            OVERPASS_URL,
-            data={"data": overpass_abfrage(filter_, lat, lon, radius_m)},
-            headers={"User-Agent": USER_AGENT},
-            timeout=90,
-        )
-        antwort.raise_for_status()
-        daten = antwort.json()
-        # Bei Zeitüberschreitung liefert Overpass HTTP 200, leere Liste und eine "remark".
-        if daten.get("remark") and not daten.get("elements"):
-            raise OsmFehler(f"Overpass ({name}): {daten['remark']}")
-        return daten.get("elements", [])
+        fehler: list[str] = []
+        # Server reihum: jede Kategorie beginnt bei einem anderen, der andere ist Ausweichserver.
+        for i in range(len(OVERPASS_SERVER)):
+            url = OVERPASS_SERVER[(start + i) % len(OVERPASS_SERVER)]
+            try:
+                antwort = httpx.post(
+                    url,
+                    data={"data": overpass_abfrage(filter_, lat, lon, radius_m)},
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=75,
+                )
+                antwort.raise_for_status()
+                daten = antwort.json()
+            except (httpx.HTTPError, ValueError) as e:
+                fehler.append(f"{url}: {type(e).__name__}")
+                continue
+            # Bei Zeitüberschreitung liefert Overpass HTTP 200, leere Liste und eine "remark".
+            if daten.get("remark") and not daten.get("elements"):
+                fehler.append(f"{url}: {daten['remark'][:80]}")
+                continue
+            return daten.get("elements", [])
+        raise OsmFehler(f"Overpass ({name}): " + "; ".join(fehler))
 
-    try:
-        return zwischengespeichert(
-            "overpass", holen, kategorie=name, lat=round(lat, 4), lon=round(lon, 4), radius_m=radius_m
-        )
-    except httpx.HTTPError as e:
-        raise OsmFehler(f"Overpass nicht erreichbar ({name}): {e}") from e
+    return zwischengespeichert(
+        "overpass", holen, kategorie=name, lat=round(lat, 4), lon=round(lon, 4), radius_m=radius_m
+    )
 
 
 def _roh_holen(lat: float, lon: float, radius_m: int) -> list[dict]:
     elemente: list[dict] = []
     fehler: list[str] = []
-    for name, filter_ in KATEGORIEN.items():
+
+    def eine(args: tuple[int, tuple[str, str]]) -> list[dict] | str:
+        i, (name, filter_) = args
         try:
-            elemente.extend(_kategorie_holen(name, filter_, lat, lon, radius_m))
+            return _kategorie_holen(name, filter_, lat, lon, radius_m, start=i)
         except OsmFehler as e:
-            fehler.append(str(e))  # eine Kategorie darf ausfallen
+            return str(e)  # eine Kategorie darf ausfallen
+
+    with ThreadPoolExecutor(max_workers=PARALLEL) as pool:
+        for ergebnis in pool.map(eine, enumerate(KATEGORIEN.items())):
+            if isinstance(ergebnis, str):
+                fehler.append(ergebnis)
+            else:
+                elemente.extend(ergebnis)
     if fehler and not elemente:
         raise OsmFehler("; ".join(fehler))
     return elemente

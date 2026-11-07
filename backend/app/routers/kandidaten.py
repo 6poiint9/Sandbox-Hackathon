@@ -10,7 +10,7 @@ from app.data import katalog
 from app.db import get_session
 from app.models import KANDIDAT_STATUS, InventarPosten, Kandidat, Sponsor, Unternehmen, Verein
 from app.providers.cache import DemoDatenFehlen
-from app.services import geo, osm, recherche, vorfilter
+from app.services import geo, osm, recherche, umkreis, vorfilter
 
 router = APIRouter(tags=["kandidaten"])
 
@@ -64,7 +64,8 @@ def kandidaten_suchen(verein_id: int, anzahl: int = 30, session: Session = Depen
             verein.lat, verein.lon = geo.geokodieren(verein.ort)
             session.add(verein)
             session.commit()
-        betriebe = osm.betriebe_im_umkreis(verein.lat, verein.lon, verein.radius_km)
+        betriebe, quelle = umkreis.betriebe_im_umkreis(verein.lat, verein.lon, verein.radius_km)
+        hinweise.append(f"Betriebe aus {quelle}")
     except (geo.GeoFehler, osm.OsmFehler, DemoDatenFehlen) as e:
         raise HTTPException(502, str(e)) from e
 

@@ -35,9 +35,11 @@ class GeminiModell:
             from google import genai
 
             s = get_settings()
-            if s.google_genai_use_vertexai:
+            if s.google_genai_use_vertexai and s.google_api_key:
+                self._client = genai.Client(vertexai=True, api_key=s.google_api_key)  # Express-Modus
+            elif s.google_genai_use_vertexai:
                 if not s.google_cloud_project:
-                    raise SprachmodellFehler("GOOGLE_CLOUD_PROJECT fehlt in .env")
+                    raise SprachmodellFehler("GOOGLE_CLOUD_PROJECT oder GOOGLE_API_KEY fehlt in .env")
                 self._client = genai.Client(
                     vertexai=True, project=s.google_cloud_project, location=s.google_cloud_location
                 )
