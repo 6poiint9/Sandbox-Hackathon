@@ -43,21 +43,47 @@ Wir suchen Pilotvereine und einen ersten Verbandspartner.
 
 ## Drei Minuten, Video
 
-Pitch und kurze Demo, zum Sprechen in etwa drei Minuten. Die Demo folgt den Bildern auf Folie 2 und 3.
+Englisch, zum Sprechen in etwa drei Minuten. Rund 360 Wörter, ruhiges Tempo landet bei drei Minuten. Zahlen nur so, wie sie auf den Folien stehen. Die 63.000 Vereine sind unsere eigene Schätzung, nicht eine amtliche Quote. Betriebe im Umkreis kommen aus Kartendaten, nicht aus dem Sprachmodell. Preise sind Richtpreise aus dem Katalog.
 
-Deutschland hat rund 629.000 eingetragene Vereine. Genau sind es 628.992, Stand März 2026. So viele wie nie. Die Quote der Engagierten liegt bei 36,7 Prozent, 2014 waren es 40 Prozent. Trotzdem suchen Vorstände Sponsoren abends: mit dem Branchenbuch, mit Bauchgefühl, mit dem Massenbrief. Es fehlt die Zeit, es fehlt das Handwerk, wen man fragt und für wie viel, und es fehlt die Kontinuität. Geht der Vorstand, gehen die Kontakte mit.
+### Slide 1 · Problem (0:00–0:40)
 
-Sponsorenkompass macht daraus drei Minuten. Wir finden die Betriebe um den Verein. Jeder Grund hat eine Quelle, dazu ein Paket und ein Richtpreis. Brief, Telefonleitfaden und Pipeline sind fertig. Sponsorendaten und Vereins-CRM, in einem. Das Ziel ist der Verein, den die Nachbarn fragen: Wie habt ihr all diese Sponsoren bekommen?
+Germany runs on nearly 630,000 registered clubs. More than ever. The volunteers are fewer: 36.7 percent, down from 40 percent in 2014.
 
-In der Demo der FC Emmendingen. Das Saisonziel steht auf 12.000 Euro, daneben die freien Pakete als Richtwert. Ein Treffer ist die Bäckerei um die Ecke, Score 72, drei Gründe mit Quellen, empfohlen ein Stand plus Bande. Der Brief ist fertig. Der Verein verschickt selbst, aus dem Tool geht keine Mail. Bestand und neue Ansprache liegen in derselben Liste.
+Boards still hunt sponsors at night. Phone book, gut feeling, mass letters. No time after work. No sales craft. And when the board changes, the contacts go with them.
 
-Gebaut an einem Tag, für genau diese Leute. Adam, Head of Sports eines Vereins in Konstanz, hat den Preis dafür schon genannt: 25 Prozent von jedem Sponsoring, das jemand reinholt.
+I’m Timon, on a club board and an educator for club managers. With Nabil, AI and IT security, we built the fix.
 
-Wir nehmen 169 Euro im Jahr. Die Analyse und drei Treffer bleiben kostenlos. Vergleichbare Tools liegen bei 223 bis 390 Euro. Von den 629.000 Vereinen sucht nach unserer eigenen Schätzung etwa jeder zehnte aktiv Sponsoren. Das sind rund 63.000 Vereine und 10,6 Millionen Euro im Jahr. Zehn Prozent davon in drei Jahren sind 6.300 Vereine und etwa 1,1 Millionen Euro Jahresumsatz.
+### Slide 2 · Solution (0:40–1:15)
 
-Football first, über Vorstände, die wir kennen. Sichtbarer Erfolg, dann fragen die Nachbarn. Danach der Roll-out in andere Sparten, über Verbände und Vereinssoftware. Das Geld folgt derselben Linie. Jetzt das Abo. Als Nächstes mehr Vereinsverwaltung auf derselben Plattform. Später eine Provision, wenn ein Sponsoring über die Plattform abgeschlossen wird.
+Meet Sponsorenkompass: sponsor data and CRM for clubs, in one. Three minutes from the website to a pitch that is ready.
 
-Warum jetzt: Recherche kostet Cent pro Betrieb, keine Agenturgebühr. Und die Vereine werden mehr, die Engagierten weniger. Wir sind Timon, Kassenwart und Ausbilder für Vereinsmanager, und Nabil, der das baut. Wir suchen Pilotvereine und einen ersten Verbandspartner.
+First we read the club from its website: teams, league, audience. Second, we scan every local business and match it to a package, a guide price, and a verified source. Third, the letter and the phone script are ready to send.
+
+The goal: the club everyone asks, how did you get all these sponsors?
+
+### Slide 3 · Product (1:15–1:55)
+
+We built this in the hackathon, for the people who chase sponsors every season.
+
+In the demo, every match says why the business fits, with a source: a local branch, or a sports sponsorship they already run. The letter is drafted, with a guide price. The pipeline holds every contact in one list. The club sends. Nothing goes out of the tool by itself.
+
+Adam, Head of Sports at a club in Konstanz, said it straight: I would pay someone 25 percent of every sponsorship they bring in.
+
+### Slide 4 · Business (1:55–2:35)
+
+169 euros a year, paid back by a single sponsor. Analysis and three matches stay free.
+
+Our estimate: one in ten of 629,000 clubs actively seeks sponsors. About 63,000 clubs, 10.6 million euros a year. Ten percent of that in three years: 6,300 clubs, about 1.1 million in annual revenue.
+
+Football first, through boards we know. Then other sports, through associations. The subscription is step one. Next, more club administration on the same platform. Later, a commission on deals closed there.
+
+### Slide 5 · Why us, why now (2:35–3:00)
+
+Why us: we live this every season. I know the board, I train club managers, and I have shipped SaaS. Nabil builds it.
+
+Why now: local research costs cents, not an agency.
+
+We are looking for pilot clubs, and for our first regional football association. Thank you.
 
 ## Nicht im Text
 
