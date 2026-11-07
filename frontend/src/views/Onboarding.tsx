@@ -6,6 +6,15 @@ import type { Leistung } from '../components/LeistungsTabelle'
 import { Fehler, Feld, Karte, Knopf, Lader, eingabe } from '../components/ui'
 
 const STANDARD_VORHANDEN = ['bande', 'website', 'social_media', 'spieltag', 'vereinsfest', 'trainingsanzug', 'turnier']
+// Im Onboarding nur, was die Potenzialrechnung trägt: bepreiste, verbreitete Leistungen ohne Doppelungen.
+// Sachleistungen (ohne Preis) und Kleinposten lassen sich später unter „Angebot“ ergänzen.
+const ANGEBOT_IM_ONBOARDING = new Set([
+  'bande', 'banner_halle', 'anzeigetafel', 'namensrecht_platz',
+  'trikot_brust', 'trikot_ruecken', 'trikot_jugend', 'trainingsanzug',
+  'website', 'social_media',
+  'spieltag', 'turnier', 'vereinsfest',
+  'azubi', 'businessclub',
+])
 const RECHERCHE_ANZAHL = 10
 
 type InventarWahl = Record<string, Leistung>
@@ -58,7 +67,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       setSponsoren(v.sponsoren)
       const wahl: InventarWahl = {}
       for (const id of STANDARD_VORHANDEN) wahl[id] = { haben: true, anzahl: 1, vergeben: 0 }
-      for (const id of v.inventar_vergeben) wahl[id] = { haben: true, anzahl: 1, vergeben: 1 }
+      for (const id of v.inventar_vergeben) if (ANGEBOT_IM_ONBOARDING.has(id)) wahl[id] = { haben: true, anzahl: 1, vergeben: 1 }
       setInventar(wahl)
     } catch (err) {
       setFehler(`Analyse fehlgeschlagen: ${(err as Error).message}`)
@@ -267,13 +276,10 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       </Karte>
 
       <Karte titel="Was könnt ihr Sponsoren anbieten?">
-        <p className="mb-4 text-sm text-stein-600">
-          Haken setzen, was es bei euch gibt, und eintragen, wie viel davon schon vergeben ist – zum Beispiel 12 Banden, davon 5 vergeben.
-          Nur freie Einheiten zählen zum offenen Potenzial.
-        </p>
-        <LeistungsTabelle katalog={katalog} werte={inventar} onAendern={inventarSetzen} />
+        <p className="mb-4 max-w-prose text-sm text-stein-600">Haken setzen, was es bei euch gibt. Nur Freies zählt zum Potenzial.</p>
+        <LeistungsTabelle katalog={katalog.filter((e) => ANGEBOT_IM_ONBOARDING.has(e.id))} werte={inventar} onAendern={inventarSetzen} />
         <p className="mt-4 text-sm text-stein-700">
-          <strong>{gewaehlt.length}</strong> Leistungen ausgewählt · <strong>{freieEinheiten}</strong> Einheiten frei zum Anbieten
+          <strong>{gewaehlt.length}</strong> Leistungen gewählt, <strong>{freieEinheiten}</strong> davon frei zum Anbieten
         </p>
       </Karte>
 
