@@ -94,14 +94,6 @@ export default function Analyse({
           onZiel={zielSetzen}
         />
       )}
-      <p className="max-w-prose text-sm text-stein-600">
-        {potenzial.bestand_sponsoren} bestehende Sponsoren, {(potenzial.betriebe_im_umkreis ?? 0).toLocaleString('de-DE')} Betriebe
-        im Umkreis von {verein.radius_km} km, davon {kandidaten.length} passende Kandidaten und {fertigAnzahl} mit Quellen geprüft.{' '}
-        {potenzial.theoretisch_max > potenzial.spanne_max &&
-          `Würde jedes freie Paket verkauft, wären es ${euro(potenzial.theoretisch_min)} bis ${euro(potenzial.theoretisch_max)}; realistisch begrenzt durch eure Vereinsgröße (${euro(potenzial.marktwert_min ?? 0)} bis ${euro(potenzial.marktwert_max ?? 0)} üblich). `}
-        {potenzial.hinweis}
-      </p>
-
       {zustand && (laeuft || zustand.suche_status === 'fehler') && (
         <Benachrichtigung vereinId={vereinId} zustand={zustand} kandidaten={kandidaten.length} onAenderung={setZustand} />
       )}

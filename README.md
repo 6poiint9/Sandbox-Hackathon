@@ -10,7 +10,7 @@ Built on 7 November 2026 at the **Cursor × Sandbox Founders Hackathon** in the 
 |---|---|
 | 🎬 Pitch + demo video | _link coming_ |
 | 🖥️ Live demo | _link coming_ |
-| 📊 Pitch deck | [Google Slides](https://docs.google.com/presentation/d/1p4gav7rx0arVGWb5EWd1qgWBckvdj517CTxpvdoi-bI/edit) |
+| 📊 Pitch deck | [PDF](docs/pitch/Sponsorenkompass-Pitch-Deck.pdf) |
 
 ---
 
