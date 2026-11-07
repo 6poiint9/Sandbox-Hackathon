@@ -51,3 +51,34 @@ class SponsorBasis(SQLModel):
 class Sponsor(SponsorBasis, table=True):
     id: int | None = Field(default=None, primary_key=True)
     verein_id: int = Field(foreign_key="verein.id", index=True)
+
+
+class Unternehmen(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    osm_id: str = Field(index=True, unique=True)  # z. B. "node/123"
+    name: str
+    branche: str  # unsere Branchenbezeichnung, passend zu katalog.zielbranchen
+    osm_typ: str | None = None  # Original-Tag, z. B. "shop=bakery"
+    adresse: str | None = None
+    lat: float
+    lon: float
+    website: str | None = None
+
+
+KANDIDAT_STATUS = ("neu", "kontaktiert", "termin", "zusage", "absage")
+
+
+class Kandidat(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    verein_id: int = Field(foreign_key="verein.id", index=True)
+    unternehmen_id: int = Field(foreign_key="unternehmen.id")
+    entfernung_km: float
+    vorfilter_score: int
+    vorfilter_gruende: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    score: int | None = None
+    sicherheit: str | None = None
+    gruende: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
+    paket_empfehlung: dict = Field(default_factory=dict, sa_column=Column(JSON))
+    recherche_status: str = "offen"  # offen, laeuft, fertig, fehler
+    recherche_fehler: str | None = None
+    status: str = "neu"

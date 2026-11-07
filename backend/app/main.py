@@ -9,7 +9,7 @@ from app.config import get_settings
 from app.data import katalog
 from app import models  # noqa: F401 - registriert die Tabellen
 from app.db import init_db
-from app.routers import onboarding, vereine
+from app.routers import kandidaten, onboarding, vereine
 
 
 @asynccontextmanager
@@ -28,6 +28,7 @@ app.add_middleware(
 )
 app.include_router(onboarding.router)
 app.include_router(vereine.router)
+app.include_router(kandidaten.router)
 
 
 @app.get("/health")
