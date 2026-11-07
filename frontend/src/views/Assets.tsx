@@ -62,7 +62,7 @@ export default function Assets({ vereinId }: { vereinId: number }) {
         <div className="flex flex-col gap-2 sm:flex-row">
           <select className={eingabe} value={neu} onChange={(e) => setNeu(e.target.value)}>
             <option value="">Asset aus dem Katalog hinzufügen …</option>
-            {katalog.filter((k) => !vorhanden.has(k.id)).map((k) => <option key={k.id} value={k.id}>{k.kategorie} · {k.name}</option>)}
+            {katalog.filter((k) => !vorhanden.has(k.id)).map((k) => <option key={k.id} value={k.id}>{k.kategorie}: {k.name}</option>)}
           </select>
           <Knopf disabled={!neu} onClick={() => aktion(async () => { const r = await api.post(`/vereine/${vereinId}/assets`, { katalog_id: neu }); setNeu(''); return r })}>Hinzufügen</Knopf>
         </div>
@@ -101,7 +101,7 @@ export default function Assets({ vereinId }: { vereinId: number }) {
                       <li key={v.id} className="flex items-center justify-between gap-2">
                         <span className="min-w-0 truncate">{v.anzahl}× <span className="font-medium">{v.sponsor}</span></span>
                         <span className="shrink-0 text-xs text-stein-500">
-                          {v.preis_eur ? euro(v.preis_eur) : ''}{v.bis ? ` · bis ${datum(v.bis)}` : ''}
+                          {v.preis_eur ? euro(v.preis_eur) : ''}{v.bis ? `, bis ${datum(v.bis)}` : ''}
                           {offen === a.id && <button className="ml-2 text-red-700" onClick={() => aktion(() => api.delete(`/vergaben/${v.id}`))}>×</button>}
                         </span>
                       </li>
@@ -160,7 +160,7 @@ function AssetEditor({ asset, sponsoren, aktion }: { asset: AssetAnsicht; sponso
 
 function Zahl({ wert, text }: { wert: string; text: string }) {
   return (
-    <div className="rounded-xl border border-stein-200 bg-white px-4 py-3 shadow-sm">
+    <div className="rounded-md border border-linie bg-white px-4 py-3">
       <p className="text-xl font-semibold text-stein-900">{wert}</p>
       <p className="text-xs text-stein-500">{text}</p>
     </div>

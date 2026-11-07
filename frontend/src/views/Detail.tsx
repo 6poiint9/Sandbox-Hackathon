@@ -91,7 +91,7 @@ export default function Detail({ vereinId, kandidatId, onZurueck }: { vereinId: 
           <div className="min-w-0 flex-1">
             <h1 className="text-xl font-semibold text-stein-900">{u.name}</h1>
             <p className="text-sm text-stein-600">
-              {u.branche} · {k.entfernung_km.toLocaleString('de-DE')} km{u.adresse ? ` · ${u.adresse}` : ''}
+              {u.branche}, {k.entfernung_km.toLocaleString('de-DE')} km{u.adresse ? `, ${u.adresse}` : ''}
             </p>
             {u.website && <a className="break-all text-sm text-rasen-800 underline" href={u.website} target="_blank" rel="noreferrer">{u.website}</a>}
             {k.zusammenfassung && <p className="mt-3 text-stein-700">{k.zusammenfassung}</p>}

@@ -46,7 +46,7 @@ export default function Benachrichtigung({
   }
 
   return (
-    <section className="rounded-xl border border-rasen-200 bg-rasen-50/60 p-4 sm:p-5">
+    <section className="rounded-md border border-rasen-200 bg-rasen-50/60 p-4 sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>{schritt && <Lader text={schritt} />}</div>
         {zustand.email_verfuegbar &&

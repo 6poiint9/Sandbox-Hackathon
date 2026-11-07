@@ -60,7 +60,7 @@ export default function KandidatenKarte({
             <Tooltip direction="top">
               <strong>{k.unternehmen.name}</strong>
               <br />
-              {k.unternehmen.branche} · {k.recherche_status === 'fertig' ? `Score ${k.score}` : 'noch nicht recherchiert'}
+              {k.unternehmen.branche}, {k.recherche_status === 'fertig' ? `Score ${k.score}` : 'noch nicht recherchiert'}
             </Tooltip>
           </CircleMarker>
         )

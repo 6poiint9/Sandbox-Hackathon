@@ -224,7 +224,7 @@ function StatusPille({ status }: { status: SponsorStatus }) {
 
 function Zahl({ wert, text, warnung }: { wert: string; text: string; warnung?: boolean }) {
   return (
-    <div className={`rounded-xl border bg-white px-4 py-3 shadow-sm ${warnung ? 'border-red-200' : 'border-stein-200'}`}>
+    <div className={`rounded-md border bg-white px-4 py-3 ${warnung ? 'border-red-200' : 'border-linie'}`}>
       <p className={`text-xl font-semibold ${warnung ? 'text-red-700' : 'text-stein-900'}`}>{wert}</p>
       <p className="text-xs text-stein-500">{text}</p>
     </div>

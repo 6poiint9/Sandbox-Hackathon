@@ -21,6 +21,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
   const [spielklasse, setSpielklasse] = useState('')
   const [mitglieder, setMitglieder] = useState('')
   const [zuschauer, setZuschauer] = useState('')
+  const [ziel, setZiel] = useState('')
   const [radius, setRadius] = useState('10')
   const [sportstaette, setSportstaette] = useState('')
   const [sponsoren, setSponsoren] = useState<ErkannterSponsor[]>([])
@@ -84,6 +85,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
         spielklasse: spielklasse || null,
         mitglieder: mitglieder ? Number(mitglieder) : null,
         zuschauer_schnitt: zuschauer ? Number(zuschauer) : null,
+        ziel_eur: ziel ? Number(ziel) : null,
         veranstaltungen: vorschlag.veranstaltungen,
         radius_km: Number(radius) || 10,
       })
@@ -155,6 +157,9 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
           <Feld label="Zuschauer je Heimspiel" hinweis="Schätzung reicht – beeinflusst die Richtpreise.">
             <input className={eingabe} inputMode="numeric" value={zuschauer} onChange={(e) => setZuschauer(e.target.value.replace(/\D/g, ''))} />
           </Feld>
+          <Feld label="Sponsoring-Ziel pro Saison in Euro" hinweis="Gesamtbetrag inklusive bestehender Sponsoren. Optional, lässt sich später an der Tafel ändern.">
+            <input className={eingabe} inputMode="numeric" placeholder="z. B. 10000" value={ziel} onChange={(e) => setZiel(e.target.value.replace(/\D/g, ''))} />
+          </Feld>
           <Feld label="Suchradius in km"><input className={eingabe} inputMode="numeric" value={radius} onChange={(e) => setRadius(e.target.value.replace(/\D/g, ''))} /></Feld>
           <Feld label="Sportstätte (Mittelpunkt der Suche)" hinweis="Aus der Website, nicht aus dem Impressum. Bitte prüfen.">
             <input className={eingabe} value={sportstaette} onChange={(e) => setSportstaette(e.target.value)} placeholder="z. B. Elzstadion, Emmendingen" />
@@ -167,7 +172,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
             <div className="flex flex-wrap gap-2">
               {vorschlag.mannschaften.map((m) => (
                 <span key={m.name} className="rounded-full bg-stein-100 px-3 py-1 text-xs text-stein-700">
-                  {m.name}{m.spielklasse ? ` · ${m.spielklasse}` : ''}
+                  {m.name}{m.spielklasse ? `, ${m.spielklasse}` : ''}
                 </span>
               ))}
             </div>

@@ -105,7 +105,7 @@ export default function KontoSeite({ konto, onVerein, onStart }: { konto: Konto 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-stein-900">Mein Konto</h1>
-          <p className="text-stein-600">{konto.name ? `${konto.name} · ` : ''}{konto.email}</p>
+          <p className="text-stein-600">{konto.name ? `${konto.name}, ` : ''}{konto.email}</p>
         </div>
         <div className="flex gap-1">
           <Knopf art="leise" onClick={() => abmelden(false)}>Abmelden</Knopf>
@@ -118,7 +118,7 @@ export default function KontoSeite({ konto, onVerein, onStart }: { konto: Konto 
             <li key={v.id}>
               <button onClick={() => onVerein(v.id)} className="flex w-full justify-between gap-3 py-3 text-left text-sm hover:bg-stein-50">
                 <span className="font-medium text-stein-900">{v.name}</span>
-                <span className="text-stein-500">{v.ort}{v.spielklasse ? ` · ${v.spielklasse}` : ''}</span>
+                <span className="text-stein-500">{v.ort}{v.spielklasse ? `, ${v.spielklasse}` : ''}</span>
               </button>
             </li>
           ))}
