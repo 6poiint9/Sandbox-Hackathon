@@ -145,10 +145,11 @@ Die API-Dokumentation erzeugt FastAPI automatisch unter `/docs`.
 ### Konfiguration
 
 ```bash
-cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
-In `.env` die Keys eintragen. Keys gehören nie ins Repository. Mit `DEMO_MODE=1` läuft die App ohne externe Aufrufe aus zwischengespeicherten Demo-Daten.
+In `backend/.env` die Keys eintragen. Keys gehören nie ins Repository. Mit `DEMO_MODE=1` läuft die App ohne externe Aufrufe aus zwischengespeicherten Demo-Daten.
 
 ### Backend
 
