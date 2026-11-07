@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { api } from './api'
 import type { Konto } from './api'
+import Abo from './views/Abo'
 import Analyse from './views/Analyse'
 import Angebot from './views/Angebot'
 import Detail from './views/Detail'
-import KontoSeite, { Anmeldung } from './views/KontoSeite'
+import KontoSeite from './views/KontoSeite'
 import Landing from './views/Landing'
 import Onboarding from './views/Onboarding'
 import { Datenschutz, Impressum } from './views/Rechtliches'
@@ -17,6 +18,7 @@ type Ansicht =
   | { art: 'impressum' }
   | { art: 'datenschutz' }
   | { art: 'start' }
+  | { art: 'abo'; verein: number | null }
   | { art: 'analyse'; verein: number }
   | { art: 'detail'; verein: number; kandidat: number }
   | { art: 'sponsoren'; verein: number }
@@ -26,6 +28,7 @@ function lesen(): Ansicht {
   const teile = window.location.hash.replace(/^#\/?/, '').split('/')
   const verein = Number(teile[1])
   if (teile[0] === 'start') return { art: 'start' }
+  if (teile[0] === 'abo') return { art: 'abo', verein: verein || null }
   if (teile[0] === 'konto') return { art: 'konto' }
   if (teile[0] === 'impressum') return { art: 'impressum' }
   if (teile[0] === 'datenschutz') return { art: 'datenschutz' }
@@ -60,7 +63,6 @@ export default function App() {
   }, [])
 
   const verein = 'verein' in ansicht ? ansicht.verein : null
-  const braucht_anmeldung = !['landing', 'konto', 'impressum', 'datenschutz'].includes(ansicht.art)
 
   return (
     <div className="min-h-screen">
@@ -70,7 +72,7 @@ export default function App() {
             <span aria-hidden="true" className="inline-block h-5 w-3 -skew-x-12 bg-signal-400" />
             Sponsorenkompass
           </button>
-          {verein && konto && (
+          {verein && ansicht.art !== 'abo' && (
             <nav className="flex gap-4 text-[15px]">
               <NavLink aktiv={ansicht.art === 'analyse' || ansicht.art === 'detail'} onClick={() => gehe(`/verein/${verein}`)}>Potenzialanalyse</NavLink>
               <NavLink aktiv={ansicht.art === 'sponsoren'} onClick={() => gehe(`/verein/${verein}/sponsoren`)}>Sponsoren</NavLink>
@@ -92,23 +94,28 @@ export default function App() {
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         {ansicht.art === 'landing' && <Landing onStart={() => gehe('/start')} />}
         {ansicht.art === 'impressum' && <Impressum />}
-        {ansicht.art === 'datenschutz' && <Datenschutz />}
-        {ansicht.art === 'konto' && geprueft && <KontoSeite konto={konto} onVerein={(id) => gehe(`/verein/${id}`)} onStart={() => gehe('/start')} />}
-        {braucht_anmeldung && geprueft && !konto && (
-          <Anmeldung
-            hinweis={ansicht.art === 'start' ? 'Bitte meldet euch an oder legt kostenlos ein Konto an – dann startet die Potenzialanalyse. Eure Daten sind nur für euch sichtbar.' : 'Bitte anmelden, um diesen Verein zu sehen.'}
-            onAngemeldet={setKonto}
+        {ansicht.art === 'abo' && geprueft && (
+          <Abo
+            konto={konto}
+            onKonto={setKonto}
+            onFertig={() => gehe(ansicht.verein ? `/verein/${ansicht.verein}` : '/konto')}
           />
         )}
-        {ansicht.art === 'start' && konto && <Onboarding onFertig={(id) => gehe(`/verein/${id}`)} />}
-        {ansicht.art === 'analyse' && konto && (
-          <Analyse vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
+        {ansicht.art === 'datenschutz' && <Datenschutz />}
+        {ansicht.art === 'konto' && geprueft && <KontoSeite konto={konto} onVerein={(id) => gehe(`/verein/${id}`)} onStart={() => gehe('/start')} />}
+        {ansicht.art === 'start' && <Onboarding onFertig={(id) => gehe(`/verein/${id}`)} />}
+        {ansicht.art === 'analyse' && (
+          <Analyse
+            vereinId={ansicht.verein}
+            onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)}
+            onFreischalten={() => gehe(`/abo/${ansicht.verein}`)}
+          />
         )}
-        {ansicht.art === 'detail' && konto && (
+        {ansicht.art === 'detail' && (
           <Detail vereinId={ansicht.verein} kandidatId={ansicht.kandidat} onZurueck={() => gehe(`/verein/${ansicht.verein}`)} />
         )}
-        {ansicht.art === 'angebot' && konto && <Angebot vereinId={ansicht.verein} />}
-        {ansicht.art === 'sponsoren' && konto && (
+        {ansicht.art === 'angebot' && <Angebot vereinId={ansicht.verein} />}
+        {ansicht.art === 'sponsoren' && (
           <Sponsoren vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
         )}
       </main>

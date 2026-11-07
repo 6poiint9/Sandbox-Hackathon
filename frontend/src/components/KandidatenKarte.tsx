@@ -45,6 +45,15 @@ export default function KandidatenKarte({
       </CircleMarker>
       {kandidaten.map((k) => {
         const aktiv = markiert === k.id
+        if (k.gesperrt) {
+          // Gesperrt: nur grob verortet (Server rundet), grau, ohne Namen
+          return (
+            <CircleMarker key={k.id} center={[k.unternehmen.lat, k.unternehmen.lon]} radius={6}
+              pathOptions={{ color: '#fff', weight: 1, fillColor: '#bac1b5', fillOpacity: 0.7, dashArray: '2 2' }}>
+              <Tooltip direction="top">{k.unternehmen.branche}, mit Abo sichtbar</Tooltip>
+            </CircleMarker>
+          )
+        }
         return (
           <CircleMarker
             key={k.id}

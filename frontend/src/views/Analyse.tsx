@@ -7,7 +7,15 @@ import PlanKarte from '../components/PlanKarte'
 import { Fehler, Karte, Knopf, Lader, ScoreBadge, eingabe } from '../components/ui'
 import Benachrichtigung from '../components/Benachrichtigung'
 
-export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onOeffnen: (kandidatId: number) => void }) {
+export default function Analyse({
+  vereinId,
+  onOeffnen,
+  onFreischalten,
+}: {
+  vereinId: number
+  onOeffnen: (kandidatId: number) => void
+  onFreischalten: () => void
+}) {
   const [verein, setVerein] = useState<Verein | null>(null)
   const [potenzial, setPotenzial] = useState<Potenzial | null>(null)
   const [kandidaten, setKandidaten] = useState<Kandidat[]>([])
@@ -72,6 +80,7 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
   const fertigAnzahl = recherche?.status.fertig ?? 0
   const offenAnzahl = (recherche?.status.offen ?? 0) + (recherche?.status.fehler ?? 0)
   const sucht = zustand?.suche_status === 'laeuft' && kandidaten.length === 0
+  const gesperrtAnzahl = kandidaten.filter((k) => k.gesperrt).length
 
   if (!verein || !potenzial) return fehler ? <Fehler text={fehler} /> : <Lader text="Potenzialanalyse wird geladen …" />
 
@@ -173,16 +182,51 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
             nur geprüfte
           </label>
           <span className="sm:ml-auto">
-            <Knopf art="sekundaer" onClick={weitereRecherchieren} disabled={!!laeuft || offenAnzahl === 0}>
-              Weitere 10 recherchieren
-            </Knopf>
+            {gesperrtAnzahl > 0 ? (
+              <Knopf art="signal" onClick={onFreischalten}>Alle {kandidaten.length} Betriebe freischalten</Knopf>
+            ) : (
+              <Knopf art="sekundaer" onClick={weitereRecherchieren} disabled={!!laeuft || offenAnzahl === 0}>
+                Weitere 10 recherchieren
+              </Knopf>
+            )}
           </span>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-5">
           <ul className="max-h-[560px] space-y-2 overflow-y-auto pr-1 lg:col-span-2">
-            {sichtbar.map((k) => {
+            {sichtbar.map((k, i) => {
               const geprueft = k.recherche_status === 'fertig'
+              if (k.gesperrt) {
+                return (
+                  <li key={k.id}>
+                    {!sichtbar[i - 1]?.gesperrt && (
+                      <div className="mb-2 mt-3 border-l-4 border-signal-400 bg-signal-50 px-3 py-2.5">
+                        <p className="font-semibold">Noch {gesperrtAnzahl} passende Betriebe in eurer Nähe</p>
+                        <p className="mt-0.5 text-sm text-stein-700">Mit dem Abo seht ihr alle mit Namen, Gründen und fertiger Ansprache.</p>
+                        <button onClick={onFreischalten} className="mt-1.5 text-sm font-semibold text-rasen-700 underline underline-offset-4">
+                          Abo ansehen
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      onClick={onFreischalten}
+                      aria-label={`Gesperrter Betrieb: ${k.unternehmen.branche}, ${k.entfernung_km.toLocaleString('de-DE')} km. Mit Abo freischalten.`}
+                      className="flex w-full items-start gap-3 rounded-md border border-dashed border-stein-300 bg-white/60 p-3 text-left"
+                    >
+                      <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[3px] bg-stein-100 text-stein-500">
+                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="11" width="14" height="10" rx="1" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                      </span>
+                      <span className="min-w-0 flex-1" aria-hidden="true">
+                        <span className="block select-none font-medium text-stein-900 blur-[5px]">Betrieb im Umkreis</span>
+                        <span className="block text-xs text-stein-600">
+                          {k.unternehmen.branche}, {k.entfernung_km.toLocaleString('de-DE')} km
+                        </span>
+                        <span className="mt-1 block select-none text-xs text-stein-500 blur-[4px]">Unterstützt bereits Vereine in der Region</span>
+                      </span>
+                    </button>
+                  </li>
+                )
+              }
               return (
                 <li key={k.id}>
                   <button

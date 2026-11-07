@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from app.data import katalog
 from app.db import get_session
 from app.models import InventarPosten, Konto, Sponsor, SponsorBasis, Verein, VereinBasis
-from app.services.auth import aktuelles_konto
+from app.services.auth import Inhaber, inhaber
 from app.services.csv_import import importieren
 
 router = APIRouter(tags=["vereine"])
@@ -27,10 +27,12 @@ def _verein(session: Session, verein_id: int) -> Verein:
 def verein_anlegen(
     daten: VereinBasis,
     session: Session = Depends(get_session),
-    konto: Konto = Depends(aktuelles_konto),
+    wer: Inhaber = Depends(inhaber),
 ) -> Verein:
     verein = Verein.model_validate(daten)
-    verein.konto_id = konto.id
+    # Angemeldet: gehört dem Konto. Gast: gehört dem Gast-Cookie, bis er sich anmeldet.
+    verein.konto_id = wer.konto.id if wer.konto else None
+    verein.gast_hash = None if wer.konto else wer.gast_hash
     session.add(verein)
     session.commit()
     session.refresh(verein)

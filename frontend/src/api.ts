@@ -92,7 +92,7 @@ export type ProfilVorschlag = {
   hinweise: string[]
 }
 
-export type Konto = { id: number; email: string; name: string | null }
+export type Konto = { id: number; email: string; name: string | null; abo: boolean }
 
 export type Verein = {
   id: number
@@ -122,6 +122,7 @@ export interface PlanKandidat {
   name: string
   score: number | null
   geprueft: boolean
+  gesperrt: boolean
 }
 
 export interface PlanZeile {
@@ -265,7 +266,9 @@ export type Kandidat = {
   }
   zusammenfassung: string | null
   quellen: { url: string; titel: string | null }[]
-  recherche_status: 'offen' | 'wartet' | 'laeuft' | 'fertig' | 'fehler'
+  recherche_status: 'offen' | 'wartet' | 'laeuft' | 'fertig' | 'fehler' | 'gesperrt'
+  /** Ohne Abo: nur Branche und Entfernung, Name und Details geschwärzt (Server). */
+  gesperrt: boolean
   recherche_fehler: string | null
   ansprechpartner: string | null
   email: string | null

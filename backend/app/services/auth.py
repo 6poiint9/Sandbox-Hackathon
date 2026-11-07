@@ -22,6 +22,7 @@ import secrets
 import threading
 import time
 from collections import defaultdict, deque
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 import httpx
@@ -245,7 +246,75 @@ def verein_von(session: Session, art: str, id_: int) -> int | None:
     return None
 
 
-def gehoert_konto(session: Session, konto: Konto, art: str, id_: int | None) -> None:
+# --- Gäste ohne Konto -------------------------------------------------------
+# "Kostenlos ausprobieren" ohne Anmeldung: Der Browser bekommt ein zufälliges
+# Gast-Token (256 Bit) im HttpOnly-/SameSite=Strict-Cookie; am Verein liegt nur
+# sein SHA-256. Bei Registrierung oder Anmeldung wandern die Vereine ins Konto.
+
+GAST_TAGE = 30
+
+
+def gast_cookie_name() -> str:
+    return "__Host-sk_gast" if get_settings().cookie_secure else "sk_gast"
+
+
+@dataclass(frozen=True)
+class Inhaber:
+    """Wer fragt: ein angemeldetes Konto oder ein Gast (nie beides)."""
+
+    konto: Konto | None
+    gast_hash: str | None
+
+    @property
+    def abo(self) -> bool:
+        return bool(self.konto and self.konto.abo)
+
+
+def inhaber(request: Request, response: Response, konto: Konto | None = Depends(optionales_konto)) -> Inhaber:
+    """Konto, sonst Gast. Ohne gültiges Gast-Cookie wird ein neues ausgestellt."""
+    if konto:
+        return Inhaber(konto=konto, gast_hash=None)
+    token = request.cookies.get(gast_cookie_name())
+    if not token or not 20 <= len(token) <= 100:
+        token = secrets.token_urlsafe(32)
+        response.set_cookie(
+            gast_cookie_name(), token, max_age=GAST_TAGE * 86400, path="/",
+            httponly=True, secure=get_settings().cookie_secure, samesite="strict",
+        )
+    return Inhaber(konto=None, gast_hash=_token_hash(token))
+
+
+def gast_uebernehmen(session: Session, request: Request, response: Response, konto_id: int) -> int:
+    """Nach Registrierung/Anmeldung: Vereine des Gast-Cookies gehören jetzt dem Konto."""
+    from app.models import Verein
+
+    token = request.cookies.get(gast_cookie_name())
+    if not token:
+        return 0
+    vereine = session.exec(
+        select(Verein).where(Verein.gast_hash == _token_hash(token), Verein.konto_id.is_(None))
+    ).all()
+    for v in vereine:
+        v.konto_id = konto_id
+        v.gast_hash = None
+        session.add(v)
+    session.commit()
+    response.delete_cookie(gast_cookie_name(), path="/", secure=get_settings().cookie_secure,
+                           httponly=True, samesite="strict")
+    return len(vereine)
+
+
+def besitzt(wer: Inhaber, verein) -> bool:
+    if wer.konto:
+        return verein.konto_id == wer.konto.id
+    return (
+        verein.konto_id is None
+        and bool(verein.gast_hash and wer.gast_hash)
+        and hmac.compare_digest(verein.gast_hash, wer.gast_hash)
+    )
+
+
+def gehoert(session: Session, wer: Inhaber, art: str, id_: int | None) -> None:
     """404 statt 403: fremde Objekte sollen nicht einmal ihre Existenz verraten."""
     from app.models import Verein
 
@@ -253,17 +322,29 @@ def gehoert_konto(session: Session, konto: Konto, art: str, id_: int | None) -> 
         return
     vid = verein_von(session, art, id_)
     verein = session.get(Verein, vid) if vid else None
-    if not verein or verein.konto_id != konto.id:
+    if not verein or not besitzt(wer, verein):
         raise HTTPException(404, "Nicht gefunden")
+
+
+def gehoert_konto(session: Session, konto: Konto, art: str, id_: int | None) -> None:
+    gehoert(session, Inhaber(konto=konto, gast_hash=None), art, id_)
 
 
 PFAD_IDS = ("verein_id", "kandidat_id", "sponsor_id", "asset_id", "vergabe_id", "aktivitaet_id")
 
 
-def zugriff(request: Request, konto: Konto = Depends(aktuelles_konto), session: Session = Depends(get_session)) -> Konto:
-    """Für alle geschützten Router: angemeldet UND Besitzer aller IDs im Pfad."""
+def zugriff(request: Request, wer: Inhaber = Depends(inhaber), session: Session = Depends(get_session)) -> Inhaber:
+    """Für alle geschützten Router: Besitzer aller IDs im Pfad (Konto oder Gast).
+
+    Gesperrte Kandidaten (ohne Abo nicht unter den freien) melden 402.
+    """
+    from app.services import freigabe
+
     for art in PFAD_IDS:
         roh = request.path_params.get(art)
         if roh is not None:
-            gehoert_konto(session, konto, art, int(roh))
-    return konto
+            gehoert(session, wer, art, int(roh))
+    roh = request.path_params.get("kandidat_id")
+    if roh is not None and not wer.abo:
+        freigabe.pruefen(session, int(roh))
+    return wer

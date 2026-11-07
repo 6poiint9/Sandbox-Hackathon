@@ -11,7 +11,8 @@ from app.data import katalog
 from app.db import get_session
 from app.models import KANDIDAT_STATUS, Aktivitaet, InventarPosten, Kandidat, Sponsor, Unternehmen, Verein
 from app.providers.cache import DemoDatenFehlen
-from app.services import geo, osm, recherche, umkreis, vorfilter
+from app.services import freigabe, geo, osm, recherche, umkreis, vorfilter
+from app.services.auth import Inhaber, zugriff
 
 router = APIRouter(tags=["kandidaten"])
 
@@ -37,6 +38,7 @@ class KandidatAnsicht(BaseModel):
     wiedervorlage: date | None = None
     notiz: str | None = None
     sponsor_id: int | None = None
+    gesperrt: bool = False  # ohne Abo: nur Branche und Entfernung, Rest geschwärzt
     unternehmen: Unternehmen
 
 
@@ -52,6 +54,17 @@ def _ansicht(k: Kandidat, u: Unternehmen) -> KandidatAnsicht:
     return KandidatAnsicht(**k.model_dump(exclude={"verein_id", "unternehmen_id"}), unternehmen=u)
 
 
+def _gesperrt(k: Kandidat, u: Unternehmen) -> KandidatAnsicht:
+    """Nur was neugierig macht, nichts was den Betrieb verrät. Ort auf ~1 km gerundet."""
+    platzhalter = Unternehmen(id=None, osm_id="", name=freigabe.GESPERRT_NAME, branche=u.branche,
+                              lat=round(u.lat, 2), lon=round(u.lon, 2))
+    return KandidatAnsicht(
+        id=k.id, status="neu", entfernung_km=round(k.entfernung_km, 1), vorfilter_score=k.vorfilter_score,
+        vorfilter_gruende=[], score=None, sicherheit=None, gruende=[], paket_empfehlung={},
+        recherche_status="gesperrt", gesperrt=True, unternehmen=platzhalter,
+    )
+
+
 def freie_inventar_ids(session: Session, verein_id: int) -> tuple[list[str], bool]:
     """Freie Katalog-IDs. Ohne gepflegtes Inventar gilt der ganze Katalog als frei."""
     posten = session.exec(select(InventarPosten).where(InventarPosten.verein_id == verein_id)).all()
@@ -61,7 +74,9 @@ def freie_inventar_ids(session: Session, verein_id: int) -> tuple[list[str], boo
 
 
 @router.post("/vereine/{verein_id}/kandidaten", response_model=SucheAntwort)
-def kandidaten_suchen(verein_id: int, anzahl: int = 30, session: Session = Depends(get_session)):
+def kandidaten_suchen(
+    verein_id: int, anzahl: int = 30, session: Session = Depends(get_session), wer: Inhaber | None = Depends(zugriff)
+):
     verein = session.get(Verein, verein_id)
     if not verein:
         raise HTTPException(404, "Verein nicht gefunden")
@@ -125,7 +140,7 @@ def kandidaten_suchen(verein_id: int, anzahl: int = 30, session: Session = Depen
     session.commit()
 
     return SucheAntwort(
-        kandidaten=kandidaten_lesen(verein_id, session),
+        kandidaten=kandidaten_lesen(verein_id, session, wer),
         luecken=ergebnis.luecken,
         betriebe_gesamt=ergebnis.betriebe_gesamt,
         ausgeschlossen_bestand=ergebnis.ausgeschlossen_bestand,
@@ -134,17 +149,20 @@ def kandidaten_suchen(verein_id: int, anzahl: int = 30, session: Session = Depen
 
 
 @router.get("/vereine/{verein_id}/kandidaten", response_model=list[KandidatAnsicht])
-def kandidaten_lesen(verein_id: int, session: Session = Depends(get_session)):
+def kandidaten_lesen(verein_id: int, session: Session = Depends(get_session), wer: Inhaber | None = Depends(zugriff)):
     zeilen = session.exec(
         select(Kandidat, Unternehmen)
         .join(Unternehmen, Kandidat.unternehmen_id == Unternehmen.id)
         .where(Kandidat.verein_id == verein_id)
     ).all()
-    ansichten = [_ansicht(k, u) for k, u in zeilen]
-    # Geprüfte zuerst (nach Score), danach ungeprüfte nach Vorfilter
+    # Interne Aufrufe (ohne Anfrage) bekommen keine Freischaltung: im Zweifel sperren.
+    abo = isinstance(wer, Inhaber) and wer.abo
+    frei = freigabe.freie_ids(session, verein_id)
+    ansichten = [_ansicht(k, u) if abo or k.id in frei else _gesperrt(k, u) for k, u in zeilen]
+    # Freie vor gesperrten; darin geprüfte zuerst (nach Score), danach ungeprüfte nach Vorfilter
     return sorted(
         ansichten,
-        key=lambda a: (a.recherche_status != "fertig", -(a.score if a.recherche_status == "fertig" else a.vorfilter_score), a.entfernung_km),
+        key=lambda a: (a.gesperrt, a.recherche_status != "fertig", -((a.score if a.recherche_status == "fertig" else a.vorfilter_score) or 0), a.entfernung_km),
     )
 
 
@@ -190,8 +208,12 @@ def recherche_starten(
     anzahl: int = 15,
     kandidat_id: int | None = None,
     session: Session = Depends(get_session),
+    wer: Inhaber = Depends(zugriff),
 ):
-    """Recherchiert die besten `anzahl` offenen Kandidaten – oder genau `kandidat_id`."""
+    """Recherchiert die besten `anzahl` offenen Kandidaten – oder genau `kandidat_id`.
+
+    Ohne Abo nur die freien Kandidaten (Kostenbremse, Sperre bleibt serverseitig).
+    """
     if not session.get(Verein, verein_id):
         raise HTTPException(404, "Verein nicht gefunden")
     offen = [
@@ -201,6 +223,9 @@ def recherche_starten(
     ]
     if kandidat_id is not None:
         offen = [k for k in offen if k.id == kandidat_id]
+    if not wer.abo:
+        frei = freigabe.freie_ids(session, verein_id)
+        offen = [k for k in offen if k.id in frei]
     offen.sort(key=lambda k: (-k.vorfilter_score, k.entfernung_km))
     auswahl = offen[:anzahl]
     for k in auswahl:
@@ -248,6 +273,7 @@ def analyse_starten(
     daten: AnalyseStart | None = None,
     recherche_anzahl: int = 10,
     session: Session = Depends(get_session),
+    wer: Inhaber = Depends(zugriff),
 ):
     """Startet Umkreissuche + Recherche im Hintergrund und kehrt sofort zurück."""
     from app.services import analyse_job
@@ -262,7 +288,9 @@ def analyse_starten(
             verein.benachrichtigung_email = daten.email.strip()
         session.add(verein)
         session.commit()
-        hintergrund.add_task(analyse_job.ausfuehren, verein_id, recherche_anzahl)
+        # Ohne Abo nur die freien 3: Der Job recherchiert in Vorfilter-Reihenfolge, also genau diese.
+        anzahl = recherche_anzahl if wer.abo else min(recherche_anzahl, freigabe.FREI_ANZAHL)
+        hintergrund.add_task(analyse_job.ausfuehren, verein_id, anzahl)
     return analyse_zustand(verein_id, session)
 
 

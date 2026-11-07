@@ -30,15 +30,25 @@ export default function PlanKarte({
               <ul className="space-y-1">
                 {z.kandidaten.map((c) => (
                   <li key={c.kandidat_id}>
+                    {c.gesperrt ? (
+                      <span className="text-stein-500">
+                        <span aria-hidden="true" className="select-none blur-[4px]">Betrieb im Umkreis</span>
+                        <span className="sr-only">Gesperrter Betrieb</span>
+                        <span className="ml-2 text-sm">mit Abo sichtbar</span>
+                      </span>
+                    ) : (
                     <button
                       onClick={() => onOeffnen(c.kandidat_id)}
                       className={`text-left underline decoration-linie underline-offset-4 hover:decoration-rasen-600 ${c.geprueft ? 'text-tinte' : 'text-stein-500'}`}
                     >
                       {c.name}
                     </button>
-                    <span className="ml-2 text-sm text-stein-500">
-                      {c.geprueft ? `Score ${c.score ?? '–'}` : 'noch nicht geprüft'}
-                    </span>
+                    )}
+                    {!c.gesperrt && (
+                      <span className="ml-2 text-sm text-stein-500">
+                        {c.geprueft ? `Score ${c.score ?? '–'}` : 'noch nicht geprüft'}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

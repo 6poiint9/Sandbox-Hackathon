@@ -14,6 +14,7 @@ from app.services.auth import (
     alle_sitzungen_beenden,
     braucht_neuen_hash,
     client_ip,
+    gast_uebernehmen,
     passwort_hashen,
     passwort_pruefen,
     passwort_regeln,
@@ -30,6 +31,11 @@ class KontoAnsicht(BaseModel):
     id: int
     email: str
     name: str | None
+    abo: bool = False
+
+
+class AboWunsch(BaseModel):
+    aktiv: bool
 
 
 class Registrierung(BaseModel):
@@ -49,7 +55,7 @@ class PasswortWechsel(BaseModel):
 
 
 def _ansicht(k: Konto) -> KontoAnsicht:
-    return KontoAnsicht(id=k.id, email=k.email, name=k.name)
+    return KontoAnsicht(id=k.id, email=k.email, name=k.name, abo=k.abo)
 
 
 @router.post("/registrieren", response_model=KontoAnsicht)
@@ -66,6 +72,7 @@ def registrieren(daten: Registrierung, request: Request, response: Response, ses
     session.commit()
     session.refresh(k)
     sitzung_starten(session, response, k.id)
+    gast_uebernehmen(session, request, response, k.id)
     return _ansicht(k)
 
 
@@ -83,6 +90,7 @@ def anmelden(daten: Login, request: Request, response: Response, session: Sessio
         session.add(k)
         session.commit()
     sitzung_starten(session, response, k.id)  # immer neue Sitzung (kein Session Fixation)
+    gast_uebernehmen(session, request, response, k.id)
     return _ansicht(k)
 
 
@@ -116,6 +124,16 @@ def passwort_aendern(daten: PasswortWechsel, request: Request, response: Respons
 @router.get("/ich", response_model=KontoAnsicht)
 def ich(response: Response, konto: Konto = Depends(aktuelles_konto)):
     response.headers["Cache-Control"] = "no-store"
+    return _ansicht(konto)
+
+
+@router.post("/abo", response_model=KontoAnsicht)
+def abo_setzen(daten: AboWunsch, konto: Konto = Depends(aktuelles_konto), session: Session = Depends(get_session)):
+    """Demo-Abo: schaltet alle Kandidaten frei. Keine Zahlung (README: Bezahlung bewusst nicht im MVP)."""
+    konto.abo = daten.aktiv
+    session.add(konto)
+    session.commit()
+    session.refresh(konto)
     return _ansicht(konto)
 
 
