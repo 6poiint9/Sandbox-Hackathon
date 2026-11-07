@@ -200,7 +200,23 @@ def alle_sitzungen_beenden(session: Session, konto_id: int) -> None:
     session.commit()
 
 
+LOKAL = {"127.0.0.1", "::1"}
+
+
+def _demo_konto(request: Request, session: Session) -> Konto | None:
+    """Lokale Demo-Instanz (DEMO_ANMELDUNG_EMAIL): ohne Sitzung als Demo-Konto. Nur von localhost."""
+    email = get_settings().demo_anmeldung_email.strip().lower()
+    if not email or client_ip(request) not in LOKAL:
+        return None
+    return session.exec(select(Konto).where(Konto.email == email)).first()
+
+
 def optionales_konto(request: Request, session: Session = Depends(get_session)) -> Konto | None:
+    konto = _sitzungs_konto(request, session)
+    return konto if konto else _demo_konto(request, session)
+
+
+def _sitzungs_konto(request: Request, session: Session) -> Konto | None:
     token = request.cookies.get(cookie_name())
     if not token:
         return None

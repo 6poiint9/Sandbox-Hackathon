@@ -5,6 +5,9 @@ import type { KatalogEintrag } from '../api'
 export type Leistung = { haben: boolean; anzahl: number; vergeben: number }
 export const LEER: Leistung = { haben: false, anzahl: 1, vergeben: 0 }
 
+/** Nur hier ist eine Stückzahl sinnvoll (mehrere Banden, mehrere Banner). Alles andere gibt es einmal. */
+export const MIT_ANZAHL = new Set(['bande', 'banner_halle'])
+
 export function leistungKorrigieren(l: Leistung): Leistung {
   const anzahl = Math.max(1, Math.min(999, Math.round(l.anzahl) || 1))
   return { ...l, anzahl, vergeben: Math.max(0, Math.min(anzahl, Math.round(l.vergeben) || 0)) }
@@ -69,7 +72,14 @@ export default function LeistungsTabelle({
                         <span className="block text-xs text-stein-500">{richtwertText(e)}</span>
                       </span>
                     </label>
-                    {l.haben && (
+                    {l.haben && !MIT_ANZAHL.has(e.id) && (
+                      <label className="mt-2 flex cursor-pointer items-center gap-2 pl-7 text-sm text-stein-700">
+                        <input type="checkbox" className="h-3.5 w-3.5 accent-rasen-700" checked={l.vergeben > 0}
+                          onChange={(ev) => onAendern(e.id, { anzahl: 1, vergeben: ev.target.checked ? 1 : 0 })} />
+                        schon an einen Sponsor vergeben
+                      </label>
+                    )}
+                    {l.haben && MIT_ANZAHL.has(e.id) && (
                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pl-7 text-sm text-stein-700">
                         <span className="flex items-center gap-2">
                           Anzahl

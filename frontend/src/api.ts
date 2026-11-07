@@ -110,6 +110,8 @@ export type Verein = {
   veranstaltungen: string[]
   radius_km: number
   ziel_eur: number | null
+  mannschaften_anzahl: number | null
+  jugend_anzahl: number | null
   luecken: { branche: string; betriebe: number }[]
   betriebe_im_umkreis: number | null
 }
@@ -295,6 +297,10 @@ export type Paket = {
 export type Potenzial = {
   spanne_min: number
   spanne_max: number
+  theoretisch_min: number
+  theoretisch_max: number
+  marktwert_min: number | null
+  marktwert_max: number | null
   freie_pakete: Paket[]
   sachleistungen: string[]
   vergebene_pakete: { katalog_id: string; name: string; sponsor: string | null }[]
@@ -334,3 +340,10 @@ export const STATUS_TEXT: Record<KandidatStatus, string> = {
 }
 
 export const euro = (n: number) => n.toLocaleString('de-DE') + ' €'
+
+export interface ZielVorschlag {
+  min: number
+  max: number
+  vorschlag: number
+  erklaerung: string
+}

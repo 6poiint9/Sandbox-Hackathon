@@ -100,9 +100,33 @@ class Paket(BaseModel):
     eigener_preis: bool = False
 
 
+# Ohne gepflegtes Inventar zählen nur Pakete, die fast jeder Verein hat (wie im Onboarding vorausgewählt).
+STANDARD_PAKETE = ("bande", "website", "social_media", "spieltag", "vereinsfest", "trainingsanzug", "turnier")
+
+# Marktwert eines Vereins: Sponsoring je Mitglied und Saison. Kreisligist mit rund 300 Mitgliedern
+# erreicht 3.000–8.000 € (motivation4teams, Ratgeber Vereinssponsoring) ≈ 10–27 € je Mitglied;
+# bundesweit ~8.400 € je Verein bei ~310 Mitgliedern (VSA/DSHS 2026; DOSB-Bestand) ≈ 27 €.
+EURO_JE_MITGLIED = (10, 27)
+# Wie weit die Summe der freien Pakete über dem Marktwert liegen darf (gutes Angebot, aktive Ansprache).
+LUFT_NACH_OBEN = 1.25
+
+
+def marktwert(verein: Verein) -> tuple[int, int] | None:
+    """Übliches Sponsoring pro Saison für diesen Verein, skaliert nach Spielklasse. None ohne Mitglieder."""
+    if not verein.mitglieder:
+        return None
+    f = spielklasse_faktor(verein.spielklasse)
+    unten, oben = (round(verein.mitglieder * e * f / 100) * 100 for e in EURO_JE_MITGLIED)
+    return max(unten, 100), max(oben, 200)
+
+
 class Potenzial(BaseModel):
-    spanne_min: int
+    spanne_min: int  # realistisch: Summe der freien Pakete, begrenzt durch den Marktwert
     spanne_max: int
+    theoretisch_min: int = 0  # wenn jedes freie Paket verkauft würde
+    theoretisch_max: int = 0
+    marktwert_min: int | None = None
+    marktwert_max: int | None = None
     freie_pakete: list[Paket]
     sachleistungen: list[str]
     vergebene_pakete: list[dict]
@@ -119,6 +143,9 @@ def _menge(katalog_id: str, einheit: str, verein: Verein) -> tuple[int, str | No
         return HEIMSPIELE, f"{HEIMSPIELE} Heimspiele pro Saison"
     if einheit == "je_mitglied":
         return BUSINESSCLUB_MITGLIEDER, f"{BUSINESSCLUB_MITGLIEDER} Mitglieder im Sponsorenkreis"
+    if einheit == "je_satz" and verein.jugend_anzahl:
+        n = verein.jugend_anzahl
+        return n, f"{n} Jugendmannschaft(en) laut Profil"
     if einheit == "je_satz":
         jugend = [
             m for m in verein.mannschaften
@@ -150,7 +177,7 @@ def berechnen(
     kat = katalog.nach_id()
     namen = {s.id: s.firma for s in sponsoren}
     gepflegt = bool(inventar)
-    posten = inventar or [InventarPosten(verein_id=verein.id or 0, katalog_id=k) for k in kat]
+    posten = inventar or [InventarPosten(verein_id=verein.id or 0, katalog_id=k) for k in STANDARD_PAKETE if k in kat]
 
     freie: list[Paket] = []
     sach: list[str] = []
@@ -190,11 +217,29 @@ def berechnen(
         f"und {verein.zuschauer_schnitt or 'unbekannt'} Zuschauern"
     )
     if not gepflegt:
-        annahmen.add("Kein Inventar gepflegt: alle Katalogpakete als frei angenommen")
+        annahmen.add("Kein Angebot gepflegt: nur übliche Standardpakete gezählt")
+
+    theo_min, theo_max = sum(x.min for x in freie), sum(x.max for x in freie)
+    spanne_min, spanne_max = theo_min, theo_max
+    mw = marktwert(verein)
+    if mw:
+        deckel = int(round(mw[1] * LUFT_NACH_OBEN / 100) * 100)
+        spanne_max = min(theo_max, deckel)
+        spanne_min = min(theo_min, mw[0], spanne_max)
+        if theo_max > deckel:
+            annahmen.add(
+                f"Begrenzt auf den Marktwert eures Vereins: {verein.mitglieder} Mitglieder × "
+                f"{EURO_JE_MITGLIED[0]}–{EURO_JE_MITGLIED[1]} € × Spielklasse = {mw[0]}–{mw[1]} € "
+                f"(+{round((LUFT_NACH_OBEN - 1) * 100)} % Luft)"
+            )
 
     return Potenzial(
-        spanne_min=sum(x.min for x in freie),
-        spanne_max=sum(x.max for x in freie),
+        spanne_min=spanne_min,
+        spanne_max=spanne_max,
+        theoretisch_min=theo_min,
+        theoretisch_max=theo_max,
+        marktwert_min=mw[0] if mw else None,
+        marktwert_max=mw[1] if mw else None,
         freie_pakete=freie,
         sachleistungen=sach,
         vergebene_pakete=vergeben,

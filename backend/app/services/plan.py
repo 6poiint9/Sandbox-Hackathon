@@ -118,7 +118,7 @@ def _hebel(status: PlanStatus, luecke: int, potenzial: Potenzial, rest: list[_Ei
     if status == "ueber_potenzial":
         fehlt = luecke - potenzial.spanne_max
         return [
-            f"Eure freien Pakete bringen höchstens {potenzial.spanne_max} €, es fehlen etwa {fehlt} €.",
+            f"Realistisch bringen eure freien Pakete höchstens {potenzial.spanne_max} €, es fehlen etwa {fehlt} €.",
             "Weitere Assets anbieten, z. B. Turniere, Social Media oder eine Azubi-Kooperation.",
             "Spielklasse und Zuschauerzahl im Profil prüfen, sie bestimmen den Preisfaktor.",
             "Das Ziel auf zwei Saisons verteilen oder mehrjährige Verträge anbieten.",
@@ -157,8 +157,8 @@ def planen(
     rest = [e for e in einheiten if id(e) not in gewaehlt]
     summe_min = sum(e.min for e in auswahl)
     summe_max = sum(e.max for e in auswahl)
-    if summe_max < luecke:
-        status: PlanStatus = "ueber_potenzial"
+    if summe_max < luecke or luecke > potenzial.spanne_max:
+        status: PlanStatus = "ueber_potenzial"  # auch, wenn es nur theoretisch reichen würde
     elif summe_min >= luecke:
         status = "erreichbar"
     else:

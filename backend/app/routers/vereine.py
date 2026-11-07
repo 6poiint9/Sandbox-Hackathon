@@ -1,6 +1,6 @@
 """Verein, Angebots-Inventar und Bestandssponsoren."""
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
@@ -8,6 +8,7 @@ from app.data import katalog
 from app.db import get_session
 from app.models import InventarPosten, Konto, Sponsor, SponsorBasis, Verein, VereinBasis
 from app.services.auth import Inhaber, inhaber
+from app.services import potenzial
 from app.services.csv_import import importieren
 
 router = APIRouter(tags=["vereine"])
@@ -21,6 +22,28 @@ def _verein(session: Session, verein_id: int) -> Verein:
 
 
 # --- Verein -----------------------------------------------------------------
+
+
+class ZielVorschlag(BaseModel):
+    min: int
+    max: int
+    vorschlag: int
+    erklaerung: str
+
+
+@router.get("/richtwerte/ziel", response_model=ZielVorschlag | None)
+def ziel_vorschlag(mitglieder: int = Query(ge=1, le=100000), spielklasse: str | None = Query(None, max_length=80)):
+    """Übliches Sponsoring pro Saison aus Mitgliederzahl und Spielklasse (Richtwert fürs Ziel)."""
+    mw = potenzial.marktwert(Verein(name="-", ort="-", mitglieder=mitglieder, spielklasse=spielklasse))
+    if not mw:
+        return None
+    lo, hi = potenzial.EURO_JE_MITGLIED
+    return ZielVorschlag(
+        min=mw[0], max=mw[1], vorschlag=int(round((mw[0] + mw[1]) / 2 / 500) * 500),
+        erklaerung=f"{mitglieder} Mitglieder × {lo}–{hi} € je Mitglied, angepasst an die Spielklasse "
+        "(Marktdaten: motivation4teams, VSA/DSHS)",
+    )
+
 
 
 @router.post("/vereine", response_model=Verein)

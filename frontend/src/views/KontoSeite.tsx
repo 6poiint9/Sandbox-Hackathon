@@ -66,9 +66,6 @@ export function Anmeldung({ hinweis, onAngemeldet }: { hinweis?: string; onAngem
           Mit dem Anlegen des Kontos gilt unsere <a className="text-rasen-800 underline" href="#/datenschutz">Datenschutzerklärung</a>.
         </p>
       )}
-      <p className="text-xs text-stein-500">
-        Sicherheit: Passwörter speichern wir nur als Argon2id-Hash und prüfen sie anonym gegen bekannte Datenlecks. Die Sitzung liegt in einem geschützten Cookie, das kein Skript lesen kann.
-      </p>
     </div>
   )
 }
