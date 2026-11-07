@@ -1,6 +1,7 @@
 """Phase 2: CSV-Import, Zuordnung, Onboarding-Analyse und API-Ablauf."""
 
 from datetime import date
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,6 +14,8 @@ from app.providers.websuche import Beleg, StrukturierteAntwort
 from app.services import onboarding
 from app.services.csv_import import betrag, importieren
 from app.services.zuordnung import katalog_id
+
+VORLAGE = Path(__file__).resolve().parents[2] / "docs" / "vorlage-bestandssponsoren.csv"
 
 # --- Zuordnung und CSV ------------------------------------------------------
 
@@ -40,7 +43,7 @@ def test_betrag_deutsch_und_englisch():
 
 
 def test_csv_vorlage_semikolon():
-    with open("../docs/vorlage-bestandssponsoren.csv", "rb") as f:
+    with open(VORLAGE, "rb") as f:
         ergebnis = importieren(f.read())
     assert ergebnis.fehler == []
     assert [s.firma for s in ergebnis.sponsoren] == ["Beispiel Bäckerei GmbH", "Beispiel Autohaus KG"]
@@ -158,7 +161,7 @@ def test_api_onboarding_ablauf(client):
     assert inventar.status_code == 200 and len(inventar.json()) == 2
     assert client.put(f"/vereine/{vid}/inventar", json=[{"katalog_id": "gibtsnicht"}]).status_code == 422
 
-    with open("../docs/vorlage-bestandssponsoren.csv", "rb") as f:
+    with open(VORLAGE, "rb") as f:
         imp = client.post(f"/vereine/{vid}/sponsoren/import", files={"datei": ("s.csv", f, "text/csv")})
     assert imp.status_code == 200
     assert len(imp.json()["importiert"]) == 2
