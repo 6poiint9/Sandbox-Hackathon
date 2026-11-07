@@ -213,3 +213,81 @@ def recherche_status(verein_id: int, session: Session = Depends(get_session)):
         status=dict(zaehler),
         fertig=zaehler["wartet"] == 0 and zaehler["laeuft"] == 0,
     )
+
+
+# --- Kompletter Hintergrundauftrag (Onboarding) -----------------------------
+
+
+class AnalyseStart(BaseModel):
+    email: str | None = None
+
+
+class AnalyseZustand(BaseModel):
+    suche_status: str
+    suche_fehler: str | None
+    benachrichtigung_email: str | None
+    email_verfuegbar: bool
+    recherche: RechercheStatus
+
+
+@router.post("/vereine/{verein_id}/analyse", response_model=AnalyseZustand)
+def analyse_starten(
+    verein_id: int,
+    hintergrund: BackgroundTasks,
+    daten: AnalyseStart | None = None,
+    recherche_anzahl: int = 10,
+    session: Session = Depends(get_session),
+):
+    """Startet Umkreissuche + Recherche im Hintergrund und kehrt sofort zurück."""
+    from app.services import analyse_job
+
+    verein = session.get(Verein, verein_id)
+    if not verein:
+        raise HTTPException(404, "Verein nicht gefunden")
+    if verein.suche_status != "laeuft":
+        verein.suche_status = "laeuft"
+        verein.suche_fehler = None
+        if daten and daten.email:
+            verein.benachrichtigung_email = daten.email.strip()
+        session.add(verein)
+        session.commit()
+        hintergrund.add_task(analyse_job.ausfuehren, verein_id, recherche_anzahl)
+    return analyse_zustand(verein_id, session)
+
+
+@router.get("/vereine/{verein_id}/analyse", response_model=AnalyseZustand)
+def analyse_zustand(verein_id: int, session: Session = Depends(get_session)):
+    from app.services import mail
+
+    verein = session.get(Verein, verein_id)
+    if not verein:
+        raise HTTPException(404, "Verein nicht gefunden")
+    return AnalyseZustand(
+        suche_status=verein.suche_status or "offen",
+        suche_fehler=verein.suche_fehler,
+        benachrichtigung_email=verein.benachrichtigung_email,
+        email_verfuegbar=mail.verfuegbar(),
+        recherche=recherche_status(verein_id, session),
+    )
+
+
+class EmailEintrag(BaseModel):
+    email: str
+
+
+@router.put("/vereine/{verein_id}/benachrichtigung", response_model=AnalyseZustand)
+def benachrichtigung_setzen(verein_id: int, daten: EmailEintrag, session: Session = Depends(get_session)):
+    """E-Mail für die Fertig-Meldung. Ist die Analyse schon fertig, geht die Mail sofort raus."""
+    from app.services import analyse_job
+
+    verein = session.get(Verein, verein_id)
+    if not verein:
+        raise HTTPException(404, "Verein nicht gefunden")
+    if "@" not in daten.email or "." not in daten.email.split("@")[-1]:
+        raise HTTPException(422, "Bitte eine gültige E-Mail-Adresse eintragen")
+    verein.benachrichtigung_email = daten.email.strip()
+    session.add(verein)
+    session.commit()
+    if verein.suche_status == "fertig":
+        analyse_job.benachrichtigen(verein_id)
+    return analyse_zustand(verein_id, session)

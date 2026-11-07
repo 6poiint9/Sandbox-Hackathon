@@ -172,6 +172,14 @@ export type Potenzial = {
 
 export type RechercheStatus = { gesamt: number; status: Record<string, number>; fertig: boolean }
 
+export type AnalyseZustand = {
+  suche_status: 'offen' | 'laeuft' | 'fertig' | 'fehler'
+  suche_fehler: string | null
+  benachrichtigung_email: string | null
+  email_verfuegbar: boolean
+  recherche: RechercheStatus
+}
+
 export type Ansprache = {
   id: number
   kandidat_id: number

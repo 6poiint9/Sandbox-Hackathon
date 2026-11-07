@@ -101,9 +101,8 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
           .filter(([, w]) => w !== 'nein')
           .map(([katalog_id, w]) => ({ katalog_id, verfuegbar: w === 'frei' })),
       )
-      setLaedt('Betriebe im Umkreis werden gesucht (bei einem neuen Ort kann das einige Minuten dauern) …')
-      await api.post(`/vereine/${vid}/kandidaten?anzahl=30`)
-      await api.post(`/vereine/${vid}/recherche?anzahl=${RECHERCHE_ANZAHL}`)
+      // Umkreissuche + Recherche laufen im Hintergrund – die Analyse ist sofort da
+      await api.post(`/vereine/${vid}/analyse?recherche_anzahl=${RECHERCHE_ANZAHL}`, {})
       onFertig(vid)
     } catch (err) {
       setFehler(`Das hat nicht geklappt: ${(err as Error).message}`)

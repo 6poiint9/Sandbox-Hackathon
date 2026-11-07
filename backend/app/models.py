@@ -26,6 +26,10 @@ class VereinBasis(SQLModel):
     # Ergebnis der letzten Umkreissuche: [{"branche": ..., "betriebe": n}]
     luecken: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
     betriebe_im_umkreis: int | None = None
+    # Hintergrundauftrag Umkreissuche + Recherche
+    suche_status: str = "offen"  # offen, laeuft, fertig, fehler
+    suche_fehler: str | None = None
+    benachrichtigung_email: str | None = None
 
 
 class Verein(VereinBasis, table=True):

@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, euro, STATUS_TEXT } from '../api'
-import type { Kandidat, KandidatStatus, Potenzial, RechercheStatus, Verein } from '../api'
+import type { AnalyseZustand, Kandidat, KandidatStatus, Potenzial, Verein } from '../api'
 import KandidatenKarte from '../components/KandidatenKarte'
 import { Fehler, Karte, Knopf, Lader, ScoreBadge, eingabe } from '../components/ui'
+import Benachrichtigung from '../components/Benachrichtigung'
 
 export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onOeffnen: (kandidatId: number) => void }) {
   const [verein, setVerein] = useState<Verein | null>(null)
   const [potenzial, setPotenzial] = useState<Potenzial | null>(null)
   const [kandidaten, setKandidaten] = useState<Kandidat[]>([])
-  const [recherche, setRecherche] = useState<RechercheStatus | null>(null)
+  const [zustand, setZustand] = useState<AnalyseZustand | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
   const [markiert, setMarkiert] = useState<number | null>(null)
   const [nurRecherchiert, setNurRecherchiert] = useState(false)
@@ -22,12 +23,12 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
         api.get<Verein>(`/vereine/${vereinId}`),
         api.get<Potenzial>(`/vereine/${vereinId}/potenzial`),
         api.get<Kandidat[]>(`/vereine/${vereinId}/kandidaten`),
-        api.get<RechercheStatus>(`/vereine/${vereinId}/recherche/status`),
+        api.get<AnalyseZustand>(`/vereine/${vereinId}/analyse`),
       ])
       setVerein(v)
       setPotenzial(p)
       setKandidaten(k)
-      setRecherche(r)
+      setZustand(r)
     } catch (err) {
       setFehler((err as Error).message)
     }
@@ -37,12 +38,13 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
     laden()
   }, [laden])
 
-  // Während die Recherche läuft, füllt sich die Liste nach und nach.
+  // Während Suche oder Recherche laufen, füllt sich die Liste nach und nach.
+  const laeuft = !!zustand && (zustand.suche_status === 'laeuft' || !zustand.recherche.fertig)
   useEffect(() => {
-    if (!recherche || recherche.fertig) return
+    if (!laeuft) return
     const t = setInterval(laden, 2500)
     return () => clearInterval(t)
-  }, [recherche, laden])
+  }, [laeuft, laden])
 
   async function weitereRecherchieren() {
     await api.post(`/vereine/${vereinId}/recherche?anzahl=10`)
@@ -56,9 +58,10 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
       (!branche || k.unternehmen.branche === branche) &&
       (!status || k.status === status),
   )
-  const laeuft = recherche && !recherche.fertig
+  const recherche = zustand?.recherche
   const fertigAnzahl = recherche?.status.fertig ?? 0
   const offenAnzahl = (recherche?.status.offen ?? 0) + (recherche?.status.fehler ?? 0)
+  const sucht = zustand?.suche_status === 'laeuft' && kandidaten.length === 0
 
   if (!verein || !potenzial) return fehler ? <Fehler text={fehler} /> : <Lader text="Potenzialanalyse wird geladen …" />
 
@@ -80,10 +83,14 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
         </div>
       </section>
 
+      {zustand && (laeuft || zustand.suche_status === 'fehler') && (
+        <Benachrichtigung vereinId={vereinId} zustand={zustand} kandidaten={kandidaten.length} onAenderung={setZustand} />
+      )}
+
       <div className="grid gap-5 lg:grid-cols-3">
         <Karte titel="Eure Lücken" className="lg:col-span-1">
           {potenzial.luecken.length === 0 ? (
-            <p className="text-sm text-slate-500">Noch keine Umkreissuche.</p>
+            <p className="text-sm text-slate-500">{sucht ? 'Wird gerade ermittelt …' : 'Noch keine Umkreissuche.'}</p>
           ) : (
             <>
               <p className="mb-3 text-sm text-slate-600">Branchen ohne Sponsor bei euch – aber mit Betrieben in der Nähe:</p>

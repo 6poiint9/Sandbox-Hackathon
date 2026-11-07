@@ -35,6 +35,13 @@ class Settings(BaseSettings):
 
     demo_mode: bool = False
     frontend_url: str = "http://localhost:5173"
+
+    # E-Mail-Benachrichtigung (optional). Ohne SMTP_HOST ist die Funktion aus.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_benutzer: str = ""
+    smtp_passwort: str = ""
+    smtp_absender: str = ""
     database_url: str = f"sqlite:///{(BACKEND_DIR / 'sponsorenkompass.db').as_posix()}"
     cache_dir: Path = BACKEND_DIR / "cache"
 

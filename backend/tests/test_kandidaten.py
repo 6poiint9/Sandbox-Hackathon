@@ -124,3 +124,39 @@ def test_ketten_im_handel_raus_banken_bleiben():
     namen = [k.betrieb.name for k in e.kandidaten]
     assert "TEDi" not in namen
     assert namen[0] == "Sparkasse"  # Banken: höhere Sponsoring-Nähe als Handel
+
+
+def test_analyse_im_hintergrund_mit_mail(osm_gemockt, monkeypatch, tmp_path):
+    from app.services import analyse_job, mail
+
+    eng = create_engine(f"sqlite:///{tmp_path / 'j.db'}", connect_args={"check_same_thread": False})
+    SQLModel.metadata.create_all(eng)
+
+    def session_override():
+        with Session(eng) as s:
+            yield s
+
+    gesendet = []
+    monkeypatch.setattr("app.services.geo.geokodieren", lambda ort: VEREIN)
+    monkeypatch.setattr(mail, "verfuegbar", lambda: True)
+    monkeypatch.setattr(mail, "senden", lambda an, betreff, text: gesendet.append((an, betreff, text)) or True)
+    monkeypatch.setattr("app.services.recherche.bewerten",
+                        lambda m, s, v, k, u, f: {"score": 77, "sicherheit": "mittel", "gruende": []})
+    monkeypatch.setattr("app.services.recherche.analyse_modell", lambda: None)
+    monkeypatch.setattr("app.services.recherche.websuche", lambda: None)
+    echt = analyse_job.ausfuehren
+    monkeypatch.setattr(analyse_job, "ausfuehren", lambda vid, n: echt(vid, n, eng))
+    app.dependency_overrides[get_session] = session_override
+    try:
+        with TestClient(app) as c:
+            vid = c.post("/vereine", json={"name": "FC Test", "ort": "Teststadt"}).json()["id"]
+            assert c.put(f"/vereine/{vid}/benachrichtigung", json={"email": "kein-mail"}).status_code == 422
+            z = c.post(f"/vereine/{vid}/analyse?recherche_anzahl=2", json={"email": "vorstand@fc-test.example"}).json()
+            assert z["email_verfuegbar"] is True
+            z = c.get(f"/vereine/{vid}/analyse").json()  # TestClient führt Hintergrundaufgaben vor der Antwort aus
+            assert z["suche_status"] == "fertig", z
+            assert z["recherche"]["status"].get("fertig") == 2
+    finally:
+        app.dependency_overrides.clear()
+    assert gesendet and gesendet[0][0] == "vorstand@fc-test.example"
+    assert "FC Test" in gesendet[0][1] and "Score 77" in gesendet[0][2]
