@@ -1,22 +1,44 @@
-# Secrets
+# Secrets (Keys nur in lokaler .env bzw. GitHub Secrets)
 .env
 *.env
+.env.*
 !.env.example
+*.pem
+*.key
 
 # Python
 .venv/
+venv/
 __pycache__/
-*.pyc
+*.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
 
 # Datenbank und Cache (Demo-Cache bleibt im Repo)
 *.db
+*.sqlite
+*.sqlite3
 backend/cache/*
 !backend/cache/demo/
 
 # Node
 node_modules/
 dist/
+.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor / persönliche Claude-Einstellungen
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.claude/settings.local.json
 
 # System
 .DS_Store
