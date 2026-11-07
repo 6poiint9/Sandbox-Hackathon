@@ -1,6 +1,8 @@
 """Kandidaten im Umkreis: suchen, vorfiltern, speichern, lesen."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from collections import Counter
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -8,7 +10,7 @@ from app.data import katalog
 from app.db import get_session
 from app.models import KANDIDAT_STATUS, InventarPosten, Kandidat, Sponsor, Unternehmen, Verein
 from app.providers.cache import DemoDatenFehlen
-from app.services import geo, osm, vorfilter
+from app.services import geo, osm, recherche, vorfilter
 
 router = APIRouter(tags=["kandidaten"])
 
@@ -23,7 +25,10 @@ class KandidatAnsicht(BaseModel):
     sicherheit: str | None
     gruende: list[dict]
     paket_empfehlung: dict
+    zusammenfassung: str | None = None
+    quellen: list[dict] = []
     recherche_status: str
+    recherche_fehler: str | None = None
     unternehmen: Unternehmen
 
 
@@ -139,3 +144,57 @@ def status_setzen(kandidat_id: int, daten: StatusAenderung, session: Session = D
     session.commit()
     session.refresh(k)
     return _ansicht(k, session.get(Unternehmen, k.unternehmen_id))
+
+
+# --- Recherche und Bewertung ------------------------------------------------
+
+
+class RechercheStart(BaseModel):
+    gestartet: int
+    kandidat_ids: list[int]
+
+
+class RechercheStatus(BaseModel):
+    gesamt: int
+    status: dict[str, int]
+    fertig: bool
+
+
+@router.post("/vereine/{verein_id}/recherche", response_model=RechercheStart)
+def recherche_starten(
+    verein_id: int,
+    hintergrund: BackgroundTasks,
+    anzahl: int = 15,
+    session: Session = Depends(get_session),
+):
+    """Recherchiert die besten `anzahl` Kandidaten (nach Vorfilter), die noch offen sind."""
+    if not session.get(Verein, verein_id):
+        raise HTTPException(404, "Verein nicht gefunden")
+    offen = [
+        k
+        for k in session.exec(select(Kandidat).where(Kandidat.verein_id == verein_id)).all()
+        if k.recherche_status in ("offen", "fehler")
+    ]
+    offen.sort(key=lambda k: (-k.vorfilter_score, k.entfernung_km))
+    auswahl = offen[:anzahl]
+    for k in auswahl:
+        k.recherche_status = "wartet"
+        k.recherche_fehler = None
+        session.add(k)
+    session.commit()
+    ids = [k.id for k in auswahl]
+    freie, _ = freie_inventar_ids(session, verein_id)
+    if ids:
+        hintergrund.add_task(recherche.alle_recherchieren, ids, freie)
+    return RechercheStart(gestartet=len(ids), kandidat_ids=ids)
+
+
+@router.get("/vereine/{verein_id}/recherche/status", response_model=RechercheStatus)
+def recherche_status(verein_id: int, session: Session = Depends(get_session)):
+    kandidaten = session.exec(select(Kandidat).where(Kandidat.verein_id == verein_id)).all()
+    zaehler = Counter(k.recherche_status for k in kandidaten)
+    return RechercheStatus(
+        gesamt=len(kandidaten),
+        status=dict(zaehler),
+        fertig=zaehler["wartet"] == 0 and zaehler["laeuft"] == 0,
+    )

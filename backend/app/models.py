@@ -79,6 +79,8 @@ class Kandidat(SQLModel, table=True):
     sicherheit: str | None = None
     gruende: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
     paket_empfehlung: dict = Field(default_factory=dict, sa_column=Column(JSON))
-    recherche_status: str = "offen"  # offen, laeuft, fertig, fehler
+    zusammenfassung: str | None = None
+    quellen: list[dict] = Field(default_factory=list, sa_column=Column(JSON))  # [{url, titel}]
+    recherche_status: str = "offen"  # offen, wartet, laeuft, fertig, fehler
     recherche_fehler: str | None = None
     status: str = "neu"

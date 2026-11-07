@@ -21,10 +21,16 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     anthropic_api_key: str = ""
 
+    # Gemini über Vertex AI mit Google-Login (ADC) oder über GEMINI_API_KEY.
+    google_genai_use_vertexai: bool = False
+    google_cloud_project: str = ""
+    google_cloud_location: str = "global"
+
+    # Modellnamen aus der Vertex-Modellliste vom 07.11.2026 (models.list()).
     llm_analyse_provider: str = "gemini"
-    llm_analyse_model: str = ""
-    llm_text_provider: str = "anthropic"
-    llm_text_model: str = "claude-sonnet-5-5"
+    llm_analyse_model: str = "gemini-3.8-flash"
+    llm_text_provider: str = "gemini"  # "anthropic" nur mit ANTHROPIC_API_KEY
+    llm_text_model: str = "gemini-3.8-flash"
 
     demo_mode: bool = False
     frontend_url: str = "http://localhost:5173"
