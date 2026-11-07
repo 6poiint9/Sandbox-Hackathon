@@ -129,6 +129,64 @@ class ExaWebsuche:
         roh = zwischengespeichert("exa-engagement", holen, firma=firma, ort=ort)
         return [Fundstelle(**f) for f in roh]
 
+    def strukturiert_suchen(
+        self,
+        query: str,
+        objective: str,
+        system_prompt: str,
+        schema: dict,
+        domain: str | None = None,
+    ) -> "StrukturierteAntwort":
+        """Felder aus Webseiten ziehen (Exa outputSchema), je Feld mit Quellen.
+
+        `domain` beschränkt hart auf eine vom Nutzer angegebene Website
+        (die eigene Vereinsseite) – das ist die einzige erlaubte Domain-Liste.
+        """
+
+        def holen() -> dict:
+            optionen: dict = {
+                "type": "auto",
+                "contents": {"highlights": True},
+                "objective": objective,
+                "system_prompt": system_prompt,
+                "output_schema": schema,
+            }
+            if domain:
+                optionen["include_domains"] = [domain]
+            antwort = self._exa.search(query, **optionen)
+            ausgabe = antwort.output
+            inhalt = ausgabe.content if ausgabe and isinstance(ausgabe.content, dict) else {}
+            belege = [
+                {
+                    "feld": g.field,
+                    "urls": [c.url for c in g.citations],
+                    "sicherheit": g.confidence,
+                }
+                for g in (ausgabe.grounding if ausgabe else [])
+            ]
+            return {
+                "inhalt": inhalt,
+                "belege": belege,
+                "fundstellen": _ergebnisse_zu_fundstellen(antwort.results, volltext=False),
+            }
+
+        roh = zwischengespeichert(
+            "exa-strukturiert", holen, query=query, schema=schema, domain=domain
+        )
+        return StrukturierteAntwort(**roh)
+
+
+class Beleg(BaseModel):
+    feld: str
+    urls: list[str]
+    sicherheit: str
+
+
+class StrukturierteAntwort(BaseModel):
+    inhalt: dict
+    belege: list[Beleg]
+    fundstellen: list[Fundstelle]
+
 
 class NurCacheWebsuche(ExaWebsuche):
     """Für DEMO_MODE: kein Key nötig, alle Antworten kommen aus cache/demo/."""
