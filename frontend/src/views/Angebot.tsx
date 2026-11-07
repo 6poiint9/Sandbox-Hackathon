@@ -50,22 +50,20 @@ export default function Angebot({ vereinId }: { vereinId: number }) {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold text-stein-900">Sponsoring-Angebot</h1>
+        <h1 className="text-3xl font-semibold text-tinte">Sponsoring-Angebot</h1>
         <p className="text-stein-600">Was ihr Sponsoren bieten könnt, wie viel davon vergeben ist und an wen.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Zahl wert={String(leistungen.length)} text="Leistungen" />
-        <Zahl wert={`${einheiten - frei} / ${einheiten}`} text="Einheiten vergeben" />
-        <Zahl wert={String(frei)} text="Einheiten frei" hervor={frei > 0} />
-        <Zahl wert={euro(einnahmen)} text="vertraglich pro Saison" />
-      </div>
+      <p className="max-w-prose text-[15px] text-stein-700">
+        {leistungen.length} Leistungen mit {einheiten} Einheiten, davon {einheiten - frei} vergeben und{' '}
+        <strong className={frei > 0 ? 'text-rasen-700' : ''}>{frei} frei</strong>. Vertraglich gesichert: {euro(einnahmen)} pro Saison.
+      </p>
       <Fehler text={fehler} />
 
       {Object.entries(gruppen).map(([kategorie, liste]) => (
-        <section key={kategorie} className="overflow-hidden rounded-md border border-stein-200 bg-white">
-          <h2 className="border-b border-stein-200 px-4 py-3 font-semibold text-stein-800">{kategorie}</h2>
-          <div className="hidden bg-stein-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-stein-500 md:grid md:grid-cols-[1fr_8rem_9rem_9rem_2rem] md:gap-4">
+        <section key={kategorie} className="overflow-hidden rounded-md border border-linie bg-white">
+          <h2 className="border-b border-linie px-4 py-3 text-xl font-semibold text-tinte">{kategorie}</h2>
+          <div className="hidden bg-stein-50 px-4 py-2 text-xs font-semibold text-stein-600 md:grid md:grid-cols-[1fr_8rem_9rem_9rem_2rem] md:gap-4">
             <span>Leistung</span><span>Anzahl</span><span>Belegung</span><span>Preis je Einheit</span><span />
           </div>
           <ul className="divide-y divide-stein-100">
@@ -88,7 +86,7 @@ export default function Angebot({ vereinId }: { vereinId: number }) {
                         <span>{a.belegt} vergeben</span>
                         <span className={a.frei > 0 ? 'font-semibold text-rasen-800' : ''}>{a.frei} frei</span>
                       </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stein-100">
+                      <div className="mt-1 h-1.5 overflow-hidden bg-stein-100">
                         <div className="h-full bg-rasen-600" style={{ width: `${(a.belegt / a.anzahl) * 100}%` }} />
                       </div>
                     </div>
@@ -212,11 +210,3 @@ function Details({ asset, sponsoren, aktion }: { asset: AssetAnsicht; sponsoren:
   )
 }
 
-function Zahl({ wert, text, hervor }: { wert: string; text: string; hervor?: boolean }) {
-  return (
-    <div className={`rounded-md border bg-white px-4 py-3 ${hervor ? 'border-rasen-600' : 'border-linie'}`}>
-      <p className={`text-xl font-semibold ${hervor ? 'text-rasen-800' : 'text-stein-900'}`}>{wert}</p>
-      <p className="text-xs text-stein-500">{text}</p>
-    </div>
-  )
-}

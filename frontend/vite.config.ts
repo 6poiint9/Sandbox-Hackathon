@@ -9,7 +9,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // API_ZIEL: zweites Backend für eine zweite lokale Instanz (z. B. Demo mit Abo)
+        target: process.env.API_ZIEL ?? 'http://localhost:8000',
         rewrite: (pfad) => pfad.replace(/^\/api/, ''),
       },
     },
