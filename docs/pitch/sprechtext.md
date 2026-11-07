@@ -77,11 +77,11 @@ Our estimate: about one in ten of the 629,000 clubs is actively looking for spon
 
 Football first, through boards we know, then other sports through the associations. Subscription first. Then more of the club’s admin, on the same platform. Later, a commission when a deal closes there.
 
-### Slide 5 · Why us, why now (2:40–3:00)
+### Slide 5 · Why us, why now (2:35–3:05)
 
 Why us: we live this every season. I know the board, I train club managers, and I have shipped SaaS. Nabil builds the product.
 
-Why now: checking a local business costs cents, not an agency.
+Why now: AI can read a local business for cents, not an agency fee. The boards are younger than they were, and they want that evening work taken off them.
 
 We are looking for pilot clubs, and for a first regional football association. Thank you.
 
