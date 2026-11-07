@@ -61,7 +61,10 @@ def kandidaten_suchen(verein_id: int, anzahl: int = 30, session: Session = Depen
 
     try:
         if verein.lat is None or verein.lon is None:
-            verein.lat, verein.lon = geo.geokodieren(verein.ort)
+            try:
+                verein.lat, verein.lon = geo.geokodieren(verein.sportstaette or verein.ort)
+            except geo.GeoFehler:
+                verein.lat, verein.lon = geo.geokodieren(verein.ort)
             session.add(verein)
             session.commit()
         betriebe, quelle = umkreis.betriebe_im_umkreis(verein.lat, verein.lon, verein.radius_km)

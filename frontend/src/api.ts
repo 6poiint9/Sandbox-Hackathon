@@ -45,12 +45,18 @@ export type ErkannterSponsor = {
   gegenleistung_text?: string | null
   gegenleistung?: string | null
   website?: string | null
+  logo_url?: string | null
+  quelle?: 'text' | 'logo' | 'text+logo'
 }
 
 export type ProfilVorschlag = {
   name: string | null
   website: string
   ort: string
+  sportstaette: string | null
+  lat: number | null
+  lon: number | null
+  sponsorenseite: string | null
   sportarten: string[]
   mannschaften: Mannschaft[]
   spielklasse: string | null

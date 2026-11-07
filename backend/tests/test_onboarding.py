@@ -78,6 +78,8 @@ class FakeSuche:
 
     def strukturiert_suchen(self, query, objective, system_prompt, schema, domain=None):
         self.anfragen.append({"query": query, "domain": domain, "schema": schema})
+        if "strasse" in schema["properties"]:
+            return StrukturierteAntwort(inhalt={"name": "Elzstadion", "ort": "Emmendingen"}, belege=[], fundstellen=[])
         if "sponsoren" in schema["properties"]:
             inhalt = {
                 "sponsoren": [
@@ -100,6 +102,22 @@ class FakeSuche:
         return StrukturierteAntwort(inhalt=inhalt, belege=[beleg], fundstellen=[])
 
 
+@pytest.fixture(autouse=True)
+def ohne_netz(monkeypatch):
+    from app.services import logos
+    from app.services.logos import ErkannterLogoSponsor
+
+    monkeypatch.setattr(
+        logos, "sponsoren_aus_logos",
+        lambda website, hinweise=None: (
+            [ErkannterLogoSponsor(firma="Bäckerei Müller GmbH", website="https://mueller.example", logo_url="https://fc.example/m.png"),
+             ErkannterLogoSponsor(firma="Ketterer Maschinenbau", website="http://ketterer.example", logo_url="https://fc.example/k.png")],
+            "https://fc.example/sponsoren",
+        ),
+    )
+    monkeypatch.setattr("app.services.geo.geokodieren", lambda q: (48.1, 7.85))
+
+
 def test_analyse_baut_profilvorschlag():
     suche = FakeSuche()
     v = onboarding.analysieren(suche, "https://www.fc-beispiel.de/", "Emmendingen")
@@ -107,7 +125,12 @@ def test_analyse_baut_profilvorschlag():
     assert v.name == "FC Beispiel"
     assert v.spielklasse == "Kreisliga A"
     assert v.mitglieder is None  # nicht gefunden -> leer, nicht geschätzt
-    assert [s.firma for s in v.sponsoren] == ["Sparkasse", "Bäckerei Müller"]
+    # Text- und Logo-Funde zusammengeführt, Bäckerei Müller nur einmal
+    assert [s.firma for s in v.sponsoren] == ["Sparkasse", "Bäckerei Müller", "Ketterer Maschinenbau"]
+    assert [s.quelle for s in v.sponsoren] == ["text", "text+logo", "logo"]
+    assert v.sportstaette == "Elzstadion, Emmendingen"
+    assert (v.lat, v.lon) == (48.1, 7.85)
+    assert v.sponsorenseite == "https://fc.example/sponsoren"
     assert v.inventar_vergeben == ["bande", "trikot_brust"]
     assert v.belege[0].urls == ["https://fc.example"]
 

@@ -10,7 +10,7 @@ router = APIRouter(prefix="/onboarding", tags=["onboarding"])
 
 class AnalyseAnfrage(BaseModel):
     website: str
-    ort: str
+    ort: str = ""
 
 
 @router.post("/analyse", response_model=ProfilVorschlag)

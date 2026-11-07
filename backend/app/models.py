@@ -10,6 +10,7 @@ class VereinBasis(SQLModel):
     name: str
     website: str | None = None
     ort: str
+    sportstaette: str | None = None  # Name + Adresse, Mittelpunkt der Umkreissuche
     lat: float | None = None
     lon: float | None = None
     sportarten: list[str] = Field(default_factory=list, sa_column=Column(JSON))

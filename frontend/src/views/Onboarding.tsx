@@ -22,6 +22,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
   const [mitglieder, setMitglieder] = useState('')
   const [zuschauer, setZuschauer] = useState('')
   const [radius, setRadius] = useState('10')
+  const [sportstaette, setSportstaette] = useState('')
   const [sponsoren, setSponsoren] = useState<ErkannterSponsor[]>([])
   const [neuerSponsor, setNeuerSponsor] = useState('')
   const [csv, setCsv] = useState<File | null>(null)
@@ -40,11 +41,13 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
   async function analysieren(e: React.FormEvent) {
     e.preventDefault()
     setFehler(null)
-    setLaedt('Wir lesen eure Website: Mannschaften, Spielklassen, Veranstaltungen und Sponsoren …')
+    setLaedt('Wir lesen eure Website: Mannschaften, Spielklassen, Sportstätte und Sponsoren – auch die Logos. Das dauert etwa eine Minute …')
     try {
       const v = await api.post<ProfilVorschlag>('/onboarding/analyse', { website, ort })
       setVorschlag(v)
       setName(v.name ?? '')
+      setOrt(v.ort || ort)
+      setSportstaette(v.sportstaette ?? '')
       setSpielklasse(v.spielklasse ?? '')
       setMitglieder(v.mitglieder ? String(v.mitglieder) : '')
       setSponsoren(v.sponsoren)
@@ -71,7 +74,11 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       const verein = await api.post<Verein>('/vereine', {
         name: name || vorschlag.name || 'Unser Verein',
         website: vorschlag.website,
-        ort,
+        ort: ort || vorschlag.ort,
+        sportstaette: sportstaette || null,
+        // Koordinaten nur übernehmen, wenn die Sportstätte unverändert ist – sonst neu verorten
+        lat: sportstaette === (vorschlag.sportstaette ?? '') ? vorschlag.lat : null,
+        lon: sportstaette === (vorschlag.sportstaette ?? '') ? vorschlag.lon : null,
         sportarten: vorschlag.sportarten,
         mannschaften: vorschlag.mannschaften,
         spielklasse: spielklasse || null,
@@ -82,7 +89,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       })
       const vid = verein.id
       if (sponsoren.length) {
-        await api.post(`/vereine/${vid}/sponsoren`, sponsoren.map(({ firma, website, gegenleistung, gegenleistung_text }) => ({ firma, website, gegenleistung, gegenleistung_text })))
+        await api.post(`/vereine/${vid}/sponsoren`, sponsoren.map(({ firma, website, gegenleistung, gegenleistung_text }) => ({ firma, website, gegenleistung, gegenleistung_text: gegenleistung_text ?? null })))
       }
       if (csv) {
         setLaedt('Sponsorenliste wird importiert …')
@@ -109,15 +116,15 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       <div className="mx-auto max-w-xl">
         <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">Wie viel Sponsoring steckt in eurem Verein?</h1>
         <p className="mt-2 text-slate-600">
-          Website und Ort eingeben – wir lesen euer Profil aus, finden passende Betriebe im Umkreis und zeigen, mit welchem Angebot ihr sie ansprecht.
+          Nur eure Website eingeben – wir lesen euer Profil und eure Sponsoren aus, finden passende Betriebe rund um eure Sportstätte und zeigen, mit welchem Angebot ihr sie ansprecht.
         </p>
         <Karte className="mt-6">
           <form onSubmit={analysieren} className="space-y-4">
             <Feld label="Website des Vereins">
               <input className={eingabe} value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="z. B. fcemmendingen.de" required />
             </Feld>
-            <Feld label="Ort">
-              <input className={eingabe} value={ort} onChange={(e) => setOrt(e.target.value)} placeholder="z. B. Emmendingen" required />
+            <Feld label="Ort (optional)" hinweis="Nur nötig, wenn die Website keine Adresse der Sportstätte nennt.">
+              <input className={eingabe} value={ort} onChange={(e) => setOrt(e.target.value)} placeholder="z. B. Emmendingen" />
             </Feld>
             <Knopf type="submit" disabled={!!laedt}>Potenzial analysieren</Knopf>
             {laedt && <Lader text={laedt} />}
@@ -150,6 +157,10 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
             <input className={eingabe} inputMode="numeric" value={zuschauer} onChange={(e) => setZuschauer(e.target.value.replace(/\D/g, ''))} />
           </Feld>
           <Feld label="Suchradius in km"><input className={eingabe} inputMode="numeric" value={radius} onChange={(e) => setRadius(e.target.value.replace(/\D/g, ''))} /></Feld>
+          <Feld label="Sportstätte (Mittelpunkt der Suche)" hinweis="Aus der Website, nicht aus dem Impressum. Bitte prüfen.">
+            <input className={eingabe} value={sportstaette} onChange={(e) => setSportstaette(e.target.value)} placeholder="z. B. Elzstadion, Emmendingen" />
+          </Feld>
+          <Feld label="Ort"><input className={eingabe} value={ort} onChange={(e) => setOrt(e.target.value)} /></Feld>
         </div>
         {vorschlag.mannschaften.length > 0 && (
           <div className="mt-4">
@@ -169,13 +180,23 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       </Karte>
 
       <Karte titel={`Bestehende Sponsoren (${sponsoren.length})`}>
-        <p className="mb-3 text-sm text-slate-600">Von eurer Website erkannt. Diese Unternehmen schlagen wir nicht noch einmal vor.</p>
+        <p className="mb-3 text-sm text-slate-600">
+          Von eurer Website erkannt – aus dem Text und aus den Logos{vorschlag.sponsorenseite && <> auf <a className="text-teal-800 underline" href={vorschlag.sponsorenseite} target="_blank" rel="noreferrer">eurer Sponsorenseite</a></>}. Diese Unternehmen schlagen wir nicht noch einmal vor.
+        </p>
         <ul className="divide-y divide-slate-100">
           {sponsoren.map((s, i) => (
             <li key={`${s.firma}-${i}`} className="flex items-center justify-between gap-3 py-2 text-sm">
-              <span>
-                <span className="font-medium text-slate-800">{s.firma}</span>
-                {s.gegenleistung_text && <span className="text-slate-500"> – {s.gegenleistung_text}</span>}
+              <span className="flex min-w-0 items-center gap-3">
+                {s.logo_url ? (
+                  <img src={s.logo_url} alt="" className="h-8 w-14 shrink-0 rounded border border-slate-100 bg-white object-contain" loading="lazy" />
+                ) : (
+                  <span className="h-8 w-14 shrink-0" />
+                )}
+                <span className="min-w-0">
+                  <span className="font-medium text-slate-800">{s.firma}</span>
+                  {s.gegenleistung_text && <span className="text-slate-500"> – {s.gegenleistung_text}</span>}
+                  {s.quelle === 'logo' && <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] uppercase text-slate-500">aus Logo</span>}
+                </span>
               </span>
               <button className="text-xs text-slate-500 hover:text-red-700" onClick={() => setSponsoren(sponsoren.filter((_, j) => j !== i))}>
                 entfernen
