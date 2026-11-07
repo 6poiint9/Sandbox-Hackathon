@@ -129,7 +129,11 @@ def kandidaten_lesen(verein_id: int, session: Session = Depends(get_session)):
         .where(Kandidat.verein_id == verein_id)
     ).all()
     ansichten = [_ansicht(k, u) for k, u in zeilen]
-    return sorted(ansichten, key=lambda a: (-(a.score or a.vorfilter_score), a.entfernung_km))
+    # Geprüfte zuerst (nach Score), danach ungeprüfte nach Vorfilter
+    return sorted(
+        ansichten,
+        key=lambda a: (a.recherche_status != "fertig", -(a.score if a.recherche_status == "fertig" else a.vorfilter_score), a.entfernung_km),
+    )
 
 
 class StatusAenderung(BaseModel):
@@ -169,9 +173,10 @@ def recherche_starten(
     verein_id: int,
     hintergrund: BackgroundTasks,
     anzahl: int = 15,
+    kandidat_id: int | None = None,
     session: Session = Depends(get_session),
 ):
-    """Recherchiert die besten `anzahl` Kandidaten (nach Vorfilter), die noch offen sind."""
+    """Recherchiert die besten `anzahl` offenen Kandidaten – oder genau `kandidat_id`."""
     if not session.get(Verein, verein_id):
         raise HTTPException(404, "Verein nicht gefunden")
     offen = [
@@ -179,6 +184,8 @@ def recherche_starten(
         for k in session.exec(select(Kandidat).where(Kandidat.verein_id == verein_id)).all()
         if k.recherche_status in ("offen", "fehler")
     ]
+    if kandidat_id is not None:
+        offen = [k for k in offen if k.id == kandidat_id]
     offen.sort(key=lambda k: (-k.vorfilter_score, k.entfernung_km))
     auswahl = offen[:anzahl]
     for k in auswahl:

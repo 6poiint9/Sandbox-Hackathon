@@ -1,32 +1,79 @@
 import { useEffect, useState } from 'react'
-import { apiGet } from './api'
+import Analyse from './views/Analyse'
+import Detail from './views/Detail'
+import Onboarding from './views/Onboarding'
+import Sponsoren from './views/Sponsoren'
 
-type Health = { status: string; demo_mode: boolean; exa_konfiguriert: boolean; katalog_eintraege: number }
+// Einfache Hash-Navigation: #/ · #/verein/1 · #/verein/1/kandidat/5 · #/verein/1/sponsoren
+type Ansicht =
+  | { art: 'start' }
+  | { art: 'analyse'; verein: number }
+  | { art: 'detail'; verein: number; kandidat: number }
+  | { art: 'sponsoren'; verein: number }
+
+function lesen(): Ansicht {
+  const teile = window.location.hash.replace(/^#\/?/, '').split('/')
+  const verein = Number(teile[1])
+  if (teile[0] !== 'verein' || !verein) return { art: 'start' }
+  if (teile[2] === 'kandidat' && Number(teile[3])) return { art: 'detail', verein, kandidat: Number(teile[3]) }
+  if (teile[2] === 'sponsoren') return { art: 'sponsoren', verein }
+  return { art: 'analyse', verein }
+}
+
+const gehe = (pfad: string) => {
+  window.location.hash = pfad
+  window.scrollTo(0, 0)
+}
 
 export default function App() {
-  const [health, setHealth] = useState<Health | null>(null)
-  const [fehler, setFehler] = useState<string | null>(null)
+  const [ansicht, setAnsicht] = useState<Ansicht>(lesen)
 
   useEffect(() => {
-    apiGet<Health>('/health').then(setHealth).catch((e: Error) => setFehler(e.message))
+    const aktualisieren = () => setAnsicht(lesen())
+    window.addEventListener('hashchange', aktualisieren)
+    return () => window.removeEventListener('hashchange', aktualisieren)
   }, [])
 
+  const verein = ansicht.art === 'start' ? null : ansicht.verein
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold text-slate-900">Sponsorenkompass</h1>
-      <p className="mt-2 text-slate-600">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</p>
-      <section className="mt-8 rounded-lg border border-slate-200 bg-white p-4 text-sm">
-        {fehler && <p className="text-red-700">Backend nicht erreichbar: {fehler}</p>}
-        {!fehler && !health && <p>Verbinde mit dem Backend …</p>}
-        {health && (
-          <ul className="space-y-1">
-            <li>Backend: <span className="font-medium text-akzent">{health.status}</span></li>
-            <li>Exa-Key: {health.exa_konfiguriert ? 'eingetragen' : 'fehlt (EXA_API_KEY in .env eintragen)'}</li>
-            <li>Demo-Modus: {health.demo_mode ? 'an' : 'aus'}</li>
-            <li>Katalog: {health.katalog_eintraege} Sponsoring-Möglichkeiten</li>
-          </ul>
+    <div className="min-h-screen">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+          <button onClick={() => gehe('/')} className="flex items-center gap-2 font-semibold text-slate-900">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-700 text-white">✦</span>
+            Sponsorenkompass
+          </button>
+          {verein && (
+            <nav className="flex gap-1 text-sm">
+              <NavLink aktiv={ansicht.art === 'analyse' || ansicht.art === 'detail'} onClick={() => gehe(`/verein/${verein}`)}>Potenzialanalyse</NavLink>
+              <NavLink aktiv={ansicht.art === 'sponsoren'} onClick={() => gehe(`/verein/${verein}/sponsoren`)}>Sponsoren</NavLink>
+            </nav>
+          )}
+          <span className="ml-auto hidden text-xs text-slate-500 sm:block">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</span>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        {ansicht.art === 'start' && <Onboarding onFertig={(id) => gehe(`/verein/${id}`)} />}
+        {ansicht.art === 'analyse' && (
+          <Analyse vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
         )}
-      </section>
-    </main>
+        {ansicht.art === 'detail' && (
+          <Detail vereinId={ansicht.verein} kandidatId={ansicht.kandidat} onZurueck={() => gehe(`/verein/${ansicht.verein}`)} />
+        )}
+        {ansicht.art === 'sponsoren' && (
+          <Sponsoren vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
+        )}
+      </main>
+    </div>
+  )
+}
+
+function NavLink({ aktiv, onClick, children }: { aktiv: boolean; onClick: () => void; children: string }) {
+  return (
+    <button onClick={onClick} className={`rounded-md px-3 py-1.5 ${aktiv ? 'bg-teal-50 font-medium text-teal-900' : 'text-slate-600 hover:bg-slate-100'}`}>
+      {children}
+    </button>
   )
 }
