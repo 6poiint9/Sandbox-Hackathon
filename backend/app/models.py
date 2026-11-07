@@ -1,6 +1,6 @@
 """Datenmodell. Begriffe sind fest (siehe CLAUDE.md), nicht umbenennen."""
 
-from datetime import date
+from datetime import date, datetime, timezone
 
 from sqlalchemy import JSON, Column
 from sqlmodel import Field, SQLModel
@@ -37,12 +37,27 @@ class Verein(VereinBasis, table=True):
 
 
 class InventarPosten(SQLModel, table=True):
+    """Ein Sponsoring-Asset des Vereins, z. B. "Bandenwerbung" mit 12 Banden."""
+
     id: int | None = Field(default=None, primary_key=True)
     verein_id: int = Field(foreign_key="verein.id", index=True)
     katalog_id: str
-    verfuegbar: bool = True
+    verfuegbar: bool = True  # False = komplett vergeben (Kurzform aus dem Onboarding)
     vergeben_an: int | None = Field(default=None, foreign_key="sponsor.id")
+    preis_eur: int | None = None  # eigener Preis je Einheit und Saison
+    anzahl: int = 1  # Einheiten, z. B. Banden oder Trikotsätze
+    beschreibung: str | None = None
+
+
+class AssetVergabe(SQLModel, table=True):
+    """Welcher Sponsor hat wie viele Einheiten eines Assets, zu welchem Preis, bis wann."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    asset_id: int = Field(foreign_key="inventarposten.id", index=True)
+    sponsor_id: int = Field(foreign_key="sponsor.id", index=True)
+    anzahl: int = 1
     preis_eur: int | None = None
+    bis: date | None = None
 
 
 class SponsorBasis(SQLModel):
@@ -53,6 +68,12 @@ class SponsorBasis(SQLModel):
     betrag_eur: int | None = None
     laufzeit_bis: date | None = None
     ansprechpartner: str | None = None
+    email: str | None = None
+    telefon: str | None = None
+    status: str = "aktiv"  # aktiv, verlaengerung, beendet
+    naechster_schritt: str | None = None
+    wiedervorlage: date | None = None
+    logo_url: str | None = None
     notiz: str | None = None
 
 
@@ -92,6 +113,14 @@ class Kandidat(SQLModel, table=True):
     recherche_status: str = "offen"  # offen, wartet, laeuft, fertig, fehler
     recherche_fehler: str | None = None
     status: str = "neu"
+    # CRM
+    ansprechpartner: str | None = None
+    email: str | None = None
+    telefon: str | None = None
+    naechster_schritt: str | None = None
+    wiedervorlage: date | None = None
+    notiz: str | None = None
+    sponsor_id: int | None = None  # nach Zusage übernommen als Sponsor
 
 
 class Ansprache(SQLModel, table=True):
@@ -101,3 +130,18 @@ class Ansprache(SQLModel, table=True):
     leitfaden: str
     email_betreff: str
     email_text: str
+
+
+AKTIVITAET_ARTEN = ("notiz", "anruf", "brief", "email", "treffen", "status", "vertrag")
+
+
+class Aktivitaet(SQLModel, table=True):
+    """CRM-Verlauf: was ist mit einem Sponsor oder Kandidaten passiert."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    verein_id: int = Field(foreign_key="verein.id", index=True)
+    sponsor_id: int | None = Field(default=None, index=True)
+    kandidat_id: int | None = Field(default=None, index=True)
+    art: str = "notiz"
+    text: str
+    zeitpunkt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

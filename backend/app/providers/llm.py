@@ -5,6 +5,7 @@ Bei ungültiger Antwort genau ein zweiter Versuch, dann ein klarer Fehler.
 """
 
 import json
+import time
 from typing import Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -52,8 +53,18 @@ class GeminiModell:
         return self._client
 
     def _aufruf(self, system: str, prompt: str, schema: type[BaseModel]) -> dict:
-        from google.genai import types
+        from google.genai import errors, types
 
+        for wartezeit in (2, 5, 10, None):  # 429 (Kontingent) mit Pause wiederholen
+            try:
+                return self._aufruf_einmal(system, prompt, schema, types)
+            except errors.APIError as e:
+                if getattr(e, "code", None) != 429 or wartezeit is None:
+                    raise
+                time.sleep(wartezeit)
+        raise SprachmodellFehler("unerreichbar")
+
+    def _aufruf_einmal(self, system: str, prompt: str, schema: type[BaseModel], types) -> dict:
         antwort = self._client_holen().models.generate_content(
             model=self.name,
             contents=prompt,

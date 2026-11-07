@@ -8,7 +8,7 @@ from fastapi.responses import Response
 from sqlmodel import Session, select
 
 from app.db import get_session
-from app.models import Ansprache, InventarPosten, Kandidat, Sponsor, Unternehmen, Verein
+from app.models import Ansprache, AssetVergabe, InventarPosten, Kandidat, Sponsor, Unternehmen, Verein
 from app.providers.cache import DemoDatenFehlen
 from app.providers.llm import SprachmodellFehler, text_modell
 from app.services import ansprache as ansprache_service
@@ -29,7 +29,9 @@ def potenzial(verein_id: int, session: Session = Depends(get_session)) -> Potenz
     verein = _verein(session, verein_id)
     inventar = session.exec(select(InventarPosten).where(InventarPosten.verein_id == verein_id)).all()
     sponsoren = session.exec(select(Sponsor).where(Sponsor.verein_id == verein_id)).all()
-    return berechnen(verein, list(inventar), list(sponsoren))
+    ids = [p.id for p in inventar]
+    vergaben = session.exec(select(AssetVergabe).where(AssetVergabe.asset_id.in_(ids))).all() if ids else []
+    return berechnen(verein, list(inventar), list(sponsoren), list(vergaben))
 
 
 @router.get("/kandidaten/{kandidat_id}/ansprache", response_model=Ansprache)

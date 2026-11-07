@@ -1,6 +1,7 @@
 """Kandidaten im Umkreis: suchen, vorfiltern, speichern, lesen."""
 
 from collections import Counter
+from datetime import date
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
@@ -8,7 +9,7 @@ from sqlmodel import Session, select
 
 from app.data import katalog
 from app.db import get_session
-from app.models import KANDIDAT_STATUS, InventarPosten, Kandidat, Sponsor, Unternehmen, Verein
+from app.models import KANDIDAT_STATUS, Aktivitaet, InventarPosten, Kandidat, Sponsor, Unternehmen, Verein
 from app.providers.cache import DemoDatenFehlen
 from app.services import geo, osm, recherche, umkreis, vorfilter
 
@@ -29,6 +30,13 @@ class KandidatAnsicht(BaseModel):
     quellen: list[dict] = []
     recherche_status: str
     recherche_fehler: str | None = None
+    ansprechpartner: str | None = None
+    email: str | None = None
+    telefon: str | None = None
+    naechster_schritt: str | None = None
+    wiedervorlage: date | None = None
+    notiz: str | None = None
+    sponsor_id: int | None = None
     unternehmen: Unternehmen
 
 
@@ -151,6 +159,9 @@ def status_setzen(kandidat_id: int, daten: StatusAenderung, session: Session = D
     k = session.get(Kandidat, kandidat_id)
     if not k:
         raise HTTPException(404, "Kandidat nicht gefunden")
+    if k.status != daten.status:
+        session.add(Aktivitaet(verein_id=k.verein_id, kandidat_id=k.id, art="status",
+                               text=f"Status: {k.status} → {daten.status}"))
     k.status = daten.status
     session.add(k)
     session.commit()

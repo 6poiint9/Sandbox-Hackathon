@@ -6,7 +6,7 @@ Preise kommen immer aus dem Katalog × Faktoren, nie vom Sprachmodell.
 from pydantic import BaseModel
 
 from app.data import katalog
-from app.models import InventarPosten, Sponsor, Verein
+from app.models import AssetVergabe, InventarPosten, Sponsor, Verein
 
 # Annahmen für Pakete, die nicht pro Saison bepreist sind. Werden in der UI angezeigt.
 HEIMSPIELE = 12
@@ -94,6 +94,7 @@ class Paket(BaseModel):
     min: int
     max: int
     menge: int = 1
+    einheiten_frei: int = 1
     annahme: str | None = None
     quelle: str  # "findasponsor" oder "schaetzung"
     eigener_preis: bool = False
@@ -128,8 +129,17 @@ def _menge(katalog_id: str, einheit: str, verein: Verein) -> tuple[int, str | No
     return 1, None
 
 
+def belegte_einheiten(p: InventarPosten, vergaben: list[AssetVergabe]) -> int:
+    if not p.verfuegbar or p.vergeben_an:
+        return p.anzahl or 1
+    return min(p.anzahl or 1, sum(v.anzahl for v in vergaben if v.asset_id == p.id))
+
+
 def berechnen(
-    verein: Verein, inventar: list[InventarPosten], sponsoren: list[Sponsor]
+    verein: Verein,
+    inventar: list[InventarPosten],
+    sponsoren: list[Sponsor],
+    vergaben: list[AssetVergabe] | None = None,
 ) -> Potenzial:
     """Ungenutztes Potenzial = Summe der freien, bepreisten Pakete.
 
@@ -149,12 +159,17 @@ def berechnen(
         e = kat.get(p.katalog_id)
         if not e:
             continue
-        if not p.verfuegbar or p.vergeben_an:
+        belegt = belegte_einheiten(p, vergaben or [])
+        frei = (p.anzahl or 1) - belegt
+        if frei <= 0:
             vergeben.append({"katalog_id": p.katalog_id, "name": e["name"], "sponsor": namen.get(p.vergeben_an)})
             continue
+        if frei > 1:
+            annahmen.add(f"{e['name']}: {frei} von {p.anzahl} Einheiten frei")
         if p.preis_eur:
             freie.append(Paket(katalog_id=p.katalog_id, name=e["name"], kategorie=e["kategorie"],
-                               min=p.preis_eur, max=p.preis_eur, quelle="verein", eigener_preis=True))
+                               min=p.preis_eur * frei, max=p.preis_eur * frei, quelle="verein",
+                               eigener_preis=True, einheiten_frei=frei))
             continue
         preis = richtpreis(p.katalog_id, verein)
         if not preis:
@@ -165,7 +180,8 @@ def berechnen(
             annahmen.add(annahme)
         unten, oben = _band(preis, menge)
         freie.append(Paket(katalog_id=p.katalog_id, name=e["name"], kategorie=e["kategorie"],
-                           min=unten, max=oben, menge=menge, annahme=annahme, quelle=preis["quelle"]))
+                           min=unten * frei, max=oben * frei, menge=menge, annahme=annahme,
+                           quelle=preis["quelle"], einheiten_frei=frei))
 
     freie.sort(key=lambda x: -x.max)
     annahmen.add(
