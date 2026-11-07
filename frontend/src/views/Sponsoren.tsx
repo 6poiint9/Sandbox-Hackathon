@@ -24,7 +24,7 @@ export default function Sponsoren({ vereinId, onOeffnen }: { vereinId: number; o
       api.get<Sponsor[]>(`/vereine/${vereinId}/sponsoren`),
       api.get<Aufgabe[]>(`/vereine/${vereinId}/aufgaben`),
     ])
-      .then(([k, s, a]) => { setKandidaten(k); setSponsoren(s); setAufgaben(a) })
+      .then(([k, s, a]) => { setKandidaten(k.filter((x) => !x.gesperrt)); setSponsoren(s); setAufgaben(a) })
       .catch((e: Error) => setFehler(e.message))
   }, [vereinId])
 

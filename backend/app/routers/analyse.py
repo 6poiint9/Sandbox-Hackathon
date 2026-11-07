@@ -12,6 +12,8 @@ from app.models import Ansprache, AssetVergabe, InventarPosten, Kandidat, Sponso
 from app.providers.cache import DemoDatenFehlen
 from app.providers.llm import SprachmodellFehler, text_modell
 from app.services import ansprache as ansprache_service
+from app.services import freigabe
+from app.services.auth import Inhaber, zugriff
 from app.services.plan import Finanzierungsplan, planen
 from app.services.potenzial import Potenzial, berechnen
 
@@ -39,15 +41,27 @@ def potenzial(verein_id: int, session: Session = Depends(get_session)) -> Potenz
 
 
 @router.get("/vereine/{verein_id}/plan", response_model=Finanzierungsplan)
-def finanzierungsplan(verein_id: int, session: Session = Depends(get_session)) -> Finanzierungsplan:
-    """Plan für das Ziel (verein.ziel_eur, inkl. Bestand) aus den freien Paketen, mit Kandidaten."""
+def finanzierungsplan(
+    verein_id: int, session: Session = Depends(get_session), wer: Inhaber = Depends(zugriff)
+) -> Finanzierungsplan:
+    """Plan für das Ziel (verein.ziel_eur, inkl. Bestand) aus den freien Paketen, mit Kandidaten.
+
+    Ohne Abo werden gesperrte Kandidaten im Plan nur als Platzhalter genannt.
+    """
     verein = _verein(session, verein_id)
     kandidaten = session.exec(
         select(Kandidat, Unternehmen)
         .join(Unternehmen, Kandidat.unternehmen_id == Unternehmen.id)
         .where(Kandidat.verein_id == verein_id)
     ).all()
-    return planen(_potenzial(session, verein), verein.ziel_eur, [(k, u) for k, u in kandidaten])
+    plan = planen(_potenzial(session, verein), verein.ziel_eur, [(k, u) for k, u in kandidaten])
+    if not wer.abo:
+        frei = freigabe.freie_ids(session, verein_id)
+        for zeile in plan.zeilen:
+            for c in zeile.kandidaten:
+                if c.kandidat_id not in frei:
+                    c.name, c.score, c.gesperrt = freigabe.GESPERRT_NAME, None, True
+    return plan
 
 
 @router.get("/kandidaten/{kandidat_id}/ansprache", response_model=Ansprache)
@@ -86,8 +100,10 @@ def ansprache_erzeugen(
 
 
 @router.get("/vereine/{verein_id}/export")
-def export(verein_id: int, session: Session = Depends(get_session)) -> Response:
-    """Alle Kandidaten als CSV (Semikolon, UTF-8 mit BOM, öffnet sauber in Excel)."""
+def export(verein_id: int, session: Session = Depends(get_session), wer: Inhaber = Depends(zugriff)) -> Response:
+    """Alle Kandidaten als CSV (Semikolon, UTF-8 mit BOM, öffnet sauber in Excel). Nur mit Abo."""
+    if not wer.abo:
+        raise HTTPException(402, "Der Export ist mit dem Abo verfügbar.")
     verein = _verein(session, verein_id)
     zeilen = session.exec(
         select(Kandidat, Unternehmen)

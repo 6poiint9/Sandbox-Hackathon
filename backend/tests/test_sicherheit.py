@@ -12,7 +12,7 @@ from app.db import get_session
 from app.main import app
 from app.models import Kandidat, Konto, Sitzung, Unternehmen
 from app.services import auth
-from app.services.auth import aktuelles_konto, cookie_name
+from app.services.auth import aktuelles_konto, cookie_name, inhaber
 
 CSRF = {"X-Sponsorenkompass": "1"}
 PW = "lange-sichere-" + "testphrase-7"  # Testwert, nur hier verwendet
@@ -21,7 +21,8 @@ PW2 = "andere-lange-" + "testphrase-9"
 
 @pytest.fixture
 def umgebung():
-    app.dependency_overrides.pop(aktuelles_konto, None)  # echte Anmeldung prüfen
+    app.dependency_overrides.pop(aktuelles_konto, None)
+    app.dependency_overrides.pop(inhaber, None)  # echte Anmeldung prüfen
     eng = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     SQLModel.metadata.create_all(eng)
 
@@ -42,14 +43,22 @@ def registrieren(c: TestClient, email: str, pw: str = PW):
     return c.post("/konto/registrieren", json={"email": email, "passwort": pw})
 
 
-def test_ohne_anmeldung_ist_alles_zu(umgebung):
-    with neuer_client() as c:
-        assert c.post("/onboarding/analyse", json={"website": "x.de"}).status_code == 401
-        assert c.post("/vereine", json={"name": "FC", "ort": "O"}).status_code == 401
-        assert c.get("/vereine/1").status_code == 401
-        assert c.get("/kandidaten/1/ansprache").status_code == 401
-        assert c.get("/health").status_code == 200  # öffentlich
-        assert c.get("/interessenten/anzahl").status_code == 200
+def test_ohne_anmeldung_nur_eigene_gastdaten(umgebung):
+    """Gäste dürfen ausprobieren, sehen aber nur, was ihr eigenes Gast-Cookie angelegt hat."""
+    with neuer_client() as fremd:
+        assert registrieren(fremd, "kasse@fc.example").status_code == 200
+        fremd_id = fremd.post("/vereine", json={"name": "FC Fremd", "ort": "O"}).json()["id"]
+    with neuer_client() as gast:
+        assert gast.get(f"/vereine/{fremd_id}").status_code == 404  # fremder Verein: nicht einmal existent
+        assert gast.get("/kandidaten/1/ansprache").status_code == 404
+        assert gast.get("/konto/ich").status_code == 401  # kein Konto
+        r = gast.post("/vereine", json={"name": "FC Gast", "ort": "O"})
+        assert r.status_code == 200 and "gast_hash" not in r.json()
+        kopf = r.headers["set-cookie"]
+        assert auth.gast_cookie_name() in kopf and "HttpOnly" in kopf and "SameSite=strict" in kopf
+        assert gast.get(f"/vereine/{r.json()['id']}").status_code == 200
+        assert gast.get("/health").status_code == 200  # öffentlich
+        assert gast.get("/interessenten/anzahl").status_code == 200
 
 
 def test_cookie_ist_httponly_secure_strict_und_token_nur_gehasht(umgebung):

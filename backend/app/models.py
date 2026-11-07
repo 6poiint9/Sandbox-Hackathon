@@ -35,6 +35,8 @@ class VereinBasis(SQLModel):
 class Verein(VereinBasis, table=True):
     id: int | None = Field(default=None, primary_key=True)
     konto_id: int | None = Field(default=None, index=True)  # None = ohne Konto angelegt
+    # Gast ohne Konto: SHA-256 des Gast-Cookies. Nie ausliefern (exclude), nur vergleichen.
+    gast_hash: str | None = Field(default=None, index=True, exclude=True)
 
 
 class InventarPosten(SQLModel, table=True):
@@ -165,6 +167,7 @@ class Konto(SQLModel, table=True):
     email: str = Field(index=True, unique=True)
     name: str | None = None
     passwort_hash: str
+    abo: bool = False  # Demo-Abo: schaltet alle Kandidaten frei (keine echte Zahlung)
     erstellt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

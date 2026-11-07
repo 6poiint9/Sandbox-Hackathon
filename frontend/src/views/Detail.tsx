@@ -77,6 +77,19 @@ export default function Detail({ vereinId, kandidatId, onZurueck }: { vereinId: 
   }
 
   if (!k) return fehler ? <Fehler text={fehler} /> : <Lader text="Kandidat wird geladen …" />
+  if (k.gesperrt) {
+    return (
+      <Karte titel="Dieser Betrieb ist mit dem Abo sichtbar">
+        <p className="text-[15px] text-stein-700">
+          {k.unternehmen.branche}, {k.entfernung_km.toLocaleString('de-DE')} km entfernt. Mit dem Abo seht ihr Namen, Gründe mit Quellen und die fertige Ansprache.
+        </p>
+        <div className="mt-4 flex gap-3">
+          <Knopf art="signal" onClick={() => { window.location.hash = `/abo/${vereinId}` }}>Abo ansehen</Knopf>
+          <Knopf art="sekundaer" onClick={onZurueck}>Zurück</Knopf>
+        </div>
+      </Karte>
+    )
+  }
   const u = k.unternehmen
   const geprueft = k.recherche_status === 'fertig'
   const pe = k.paket_empfehlung

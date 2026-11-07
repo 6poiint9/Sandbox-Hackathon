@@ -30,6 +30,7 @@ class PlanKandidat(BaseModel):
     name: str
     score: int | None
     geprueft: bool
+    gesperrt: bool = False  # ohne Abo: Name geschwärzt
 
 
 class PlanZeile(BaseModel):

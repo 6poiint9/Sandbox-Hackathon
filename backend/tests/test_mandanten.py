@@ -18,7 +18,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from app.db import get_session
 from app.main import app
 from app.models import Ansprache, Kandidat, Unternehmen
-from app.services.auth import aktuelles_konto, zugriff
+from app.services.auth import aktuelles_konto, inhaber, zugriff
 
 CSRF = {"X-Sponsorenkompass": "1"}
 PW_A = "mandant-a-" + "lange-testphrase"
@@ -68,6 +68,7 @@ def test_jeder_endpunkt_ist_geschuetzt_oder_ausdruecklich_oeffentlich():
 @pytest.fixture
 def zwei_mandanten():
     app.dependency_overrides.pop(aktuelles_konto, None)
+    app.dependency_overrides.pop(inhaber, None)
     eng = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     SQLModel.metadata.create_all(eng)
 

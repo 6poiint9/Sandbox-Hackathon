@@ -3,10 +3,11 @@ import pytest
 from app.config import get_settings
 from app.main import app
 from app.models import Konto
-from app.services.auth import BEGRENZER, aktuelles_konto
+from app.services.auth import BEGRENZER, Inhaber, aktuelles_konto, inhaber
 
 CSRF = {"X-Sponsorenkompass": "1"}
-TEST_KONTO = Konto(id=1, email="test@verein.example", passwort_hash="-")
+# Fachtests laufen mit Abo (alles freigeschaltet); Gast und Sperre prüft test_freigabe.py
+TEST_KONTO = Konto(id=1, email="test@verein.example", passwort_hash="-", abo=True)
 
 
 @pytest.fixture(autouse=True)
@@ -23,5 +24,6 @@ def isolierter_cache(tmp_path, monkeypatch):
     BEGRENZER.leeren()
     # Fachtests laufen als angemeldetes Testkonto 1; test_sicherheit.py prüft die echte Anmeldung
     app.dependency_overrides[aktuelles_konto] = lambda: TEST_KONTO
+    app.dependency_overrides[inhaber] = lambda: Inhaber(konto=TEST_KONTO, gast_hash=None)
     yield settings
     get_settings.cache_clear()
