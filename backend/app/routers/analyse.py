@@ -12,6 +12,7 @@ from app.models import Ansprache, AssetVergabe, InventarPosten, Kandidat, Sponso
 from app.providers.cache import DemoDatenFehlen
 from app.providers.llm import SprachmodellFehler, text_modell
 from app.services import ansprache as ansprache_service
+from app.services.plan import Finanzierungsplan, planen
 from app.services.potenzial import Potenzial, berechnen
 
 router = APIRouter(tags=["analyse"])
@@ -24,14 +25,29 @@ def _verein(session: Session, verein_id: int) -> Verein:
     return v
 
 
-@router.get("/vereine/{verein_id}/potenzial", response_model=Potenzial)
-def potenzial(verein_id: int, session: Session = Depends(get_session)) -> Potenzial:
-    verein = _verein(session, verein_id)
-    inventar = session.exec(select(InventarPosten).where(InventarPosten.verein_id == verein_id)).all()
-    sponsoren = session.exec(select(Sponsor).where(Sponsor.verein_id == verein_id)).all()
+def _potenzial(session: Session, verein: Verein) -> Potenzial:
+    inventar = session.exec(select(InventarPosten).where(InventarPosten.verein_id == verein.id)).all()
+    sponsoren = session.exec(select(Sponsor).where(Sponsor.verein_id == verein.id)).all()
     ids = [p.id for p in inventar]
     vergaben = session.exec(select(AssetVergabe).where(AssetVergabe.asset_id.in_(ids))).all() if ids else []
     return berechnen(verein, list(inventar), list(sponsoren), list(vergaben))
+
+
+@router.get("/vereine/{verein_id}/potenzial", response_model=Potenzial)
+def potenzial(verein_id: int, session: Session = Depends(get_session)) -> Potenzial:
+    return _potenzial(session, _verein(session, verein_id))
+
+
+@router.get("/vereine/{verein_id}/plan", response_model=Finanzierungsplan)
+def finanzierungsplan(verein_id: int, session: Session = Depends(get_session)) -> Finanzierungsplan:
+    """Plan für das Ziel (verein.ziel_eur, inkl. Bestand) aus den freien Paketen, mit Kandidaten."""
+    verein = _verein(session, verein_id)
+    kandidaten = session.exec(
+        select(Kandidat, Unternehmen)
+        .join(Unternehmen, Kandidat.unternehmen_id == Unternehmen.id)
+        .where(Kandidat.verein_id == verein_id)
+    ).all()
+    return planen(_potenzial(session, verein), verein.ziel_eur, [(k, u) for k, u in kandidaten])
 
 
 @router.get("/kandidaten/{kandidat_id}/ansprache", response_model=Ansprache)
