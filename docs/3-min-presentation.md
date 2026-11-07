@@ -1,5 +1,5 @@
 Slide 1: Problem (0:00 – 0:40)
-"Germany runs on nearly 630,000 registered clubs. But here is the problem: while the number of clubs is at an all-time high, volunteer numbers are shrinking fast.
+"Germany runs on 629,000 registered clubs, 628,992 to be exact, a record high. But here is the problem: volunteer engagement is down to 36.7 percent, from 40 percent in 2014.
 
 Right now, club boards spend their evenings trying to find local sponsors using gut feeling, old phone books, and generic mass letters. They face three major pain points: no time after work, no specialized sales know-how, and zero continuity when board members change.
 
@@ -20,9 +20,9 @@ As you can see in the live demo: every match explains why the business fits—fo
 When we showed this to Adam, Head of Sports at a club in Konstanz, his reaction was immediate: ‘I’d pay someone 25 percent of every sponsorship they bring in.’"
 
 Slide 4: Business Model & Go-To-Market (1:55 – 2:35)
-"Our pricing is simple: 169 Euros per year for full access, which pays for itself with a single sponsor.
+"Our pricing is simple: 169 Euros per year for full access, which pays for itself with a single sponsor. The analysis and three matches stay free.
 
-Out of 629,000 clubs in Germany, about 63,000 actively seek sponsors each year, representing a 10.6 Million Euro SAM. With 10 percent SOM in three years, we reach 1.1 Million Euros in ARR.
+Out of 629,000 clubs in Germany, our own estimate is that about one in ten actively seeks sponsors. That is about 63,000 clubs and a 10.6 million euro SAM. Ten percent of that SAM in three years is our SOM: about 6,300 clubs and 1.1 million euros ARR.
 
 We start with a Football First strategy through our direct network of club boards.
 
@@ -31,6 +31,6 @@ Long-term, our roadmap expands beyond subscriptions: first into broader club man
 Slide 5: Why Us / Why Now & Ask (2:35 – 3:00)
 "Why us? Because we live this problem every season. I bring deep domain expertise as a club board member, educator, and SaaS Product Owner, and Nabil brings the engineering power.
 
-Why now? AI now makes local market research cost cents instead of thousands of Euros in agency fees.
+Why now? AI now makes local market research cost cents per business, not an agency fee.
 
 We are currently looking for pilot clubs and our first regional football association partner. Thank you!"
