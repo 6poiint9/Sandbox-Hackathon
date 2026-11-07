@@ -145,3 +145,15 @@ class Aktivitaet(SQLModel, table=True):
     art: str = "notiz"
     text: str
     zeitpunkt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Interessent(SQLModel, table=True):
+    """Anmeldung über die Landingpage (Warteliste / Pilotverein)."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    email: str = Field(index=True)
+    verein: str | None = None
+    rolle: str | None = None  # z. B. Vorstand, Kassenwart, Sponsoring-Verantwortliche
+    nachricht: str | None = None
+    pilot: bool = False
+    zeitpunkt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -73,3 +73,11 @@ def test_kandidat_crm_und_uebernahme(c):
     assert c.get("/vereine/1/assets").json()[0]["belegt"] == 1
     # zweiter Klick legt keinen zweiten Sponsor an
     assert c.post("/kandidaten/1/zum-sponsor", json={}).json()["id"] == s["id"]
+
+
+def test_landing_anmeldung(c):
+    assert c.post("/interessenten", json={"email": "falsch"}).status_code == 422
+    z = c.post("/interessenten", json={"email": "Vorstand@FC.example", "verein": "FC", "pilot": True}).json()
+    assert z == {"anmeldungen": 1, "pilotvereine": 1}
+    z = c.post("/interessenten", json={"email": "vorstand@fc.example", "rolle": "Kassenwart"}).json()
+    assert z["anmeldungen"] == 1  # keine Dopplung

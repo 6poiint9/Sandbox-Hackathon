@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import Analyse from './views/Analyse'
 import Assets from './views/Assets'
 import Detail from './views/Detail'
+import Landing from './views/Landing'
 import Onboarding from './views/Onboarding'
 import Sponsoren from './views/Sponsoren'
 
 // Einfache Hash-Navigation: #/ · #/verein/1 · #/verein/1/kandidat/5 · #/verein/1/sponsoren
 type Ansicht =
+  | { art: 'landing' }
   | { art: 'start' }
   | { art: 'analyse'; verein: number }
   | { art: 'detail'; verein: number; kandidat: number }
@@ -16,7 +18,8 @@ type Ansicht =
 function lesen(): Ansicht {
   const teile = window.location.hash.replace(/^#\/?/, '').split('/')
   const verein = Number(teile[1])
-  if (teile[0] !== 'verein' || !verein) return { art: 'start' }
+  if (teile[0] === 'start') return { art: 'start' }
+  if (teile[0] !== 'verein' || !verein) return { art: 'landing' }
   if (teile[2] === 'kandidat' && Number(teile[3])) return { art: 'detail', verein, kandidat: Number(teile[3]) }
   if (teile[2] === 'sponsoren') return { art: 'sponsoren', verein }
   if (teile[2] === 'assets') return { art: 'assets', verein }
@@ -37,7 +40,7 @@ export default function App() {
     return () => window.removeEventListener('hashchange', aktualisieren)
   }, [])
 
-  const verein = ansicht.art === 'start' ? null : ansicht.verein
+  const verein = ansicht.art === 'start' || ansicht.art === 'landing' ? null : ansicht.verein
 
   return (
     <div className="min-h-screen">
@@ -55,10 +58,14 @@ export default function App() {
             </nav>
           )}
           <span className="ml-auto hidden text-xs text-slate-500 sm:block">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</span>
+          {!verein && ansicht.art === 'landing' && (
+            <button onClick={() => gehe('/start')} className="ml-auto rounded-lg bg-teal-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-800 sm:ml-0">Ausprobieren</button>
+          )}
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        {ansicht.art === 'landing' && <Landing onStart={() => gehe('/start')} />}
         {ansicht.art === 'start' && <Onboarding onFertig={(id) => gehe(`/verein/${id}`)} />}
         {ansicht.art === 'analyse' && (
           <Analyse vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
