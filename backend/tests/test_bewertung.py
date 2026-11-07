@@ -1,6 +1,5 @@
 """Phase 4: Bewertung prüft Quellen, Pakete und Preise; Recherche fängt Fehler ab."""
 
-from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.models import Kandidat, Unternehmen, Verein
@@ -67,8 +66,8 @@ def test_bewertung_prueft_quellen_pakete_preise():
     assert [g["quelle_url"] for g in felder["gruende"]] == ["https://zeitung.example/a", U.website]
     assert felder["sicherheit"] == "niedrig"  # nur 2 belegte Gründe
     assert felder["paket_empfehlung"]["katalog_ids"] == ["vereinsfest"]
-    # vereinsfest 200–1000 € × Landesliga 1,3 × Zuschauer 1,0
-    assert felder["paket_empfehlung"]["preis_eur"] == {"min": 250, "max": 1300}
+    # vereinsfest 200–1000 € × 1,3 = 250–1300, mittleres Band 25–75 %
+    assert felder["paket_empfehlung"]["preis_eur"] == {"min": 500, "max": 1050}
 
 
 def test_website_fehler_wird_vermerkt_nicht_geworfen():
@@ -86,8 +85,9 @@ def test_richtpreis_faktoren():
     assert potenzial.richtpreis("sachsponsoring", kreis) is None
 
 
-def test_recherche_faengt_fehler_pro_kandidat_ab(monkeypatch):
-    eng = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+def test_recherche_faengt_fehler_pro_kandidat_ab(monkeypatch, tmp_path):
+    # Datei-DB wie im Betrieb: jeder Thread bekommt eine eigene Verbindung.
+    eng = create_engine(f"sqlite:///{tmp_path / 't.db'}", connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(eng)
     with Session(eng) as s:
         s.add(Verein(id=1, name="FC", ort="Ort"))

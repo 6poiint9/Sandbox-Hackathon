@@ -75,6 +75,10 @@ def kandidaten_suchen(verein_id: int, anzahl: int = 30, session: Session = Depen
     ergebnis = vorfilter.filtern(
         betriebe, freie, [s.firma for s in sponsoren], verein.radius_km, anzahl
     )
+    verein.luecken = ergebnis.luecken
+    verein.betriebe_im_umkreis = ergebnis.betriebe_gesamt
+    session.add(verein)
+    session.commit()
 
     # Unbearbeitete Kandidaten einer früheren Suche ersetzen, bearbeitete behalten.
     alte = session.exec(select(Kandidat).where(Kandidat.verein_id == verein_id)).all()

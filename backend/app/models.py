@@ -22,6 +22,9 @@ class VereinBasis(SQLModel):
     veranstaltungen: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     radius_km: float = 15
     ziel_eur: int | None = None
+    # Ergebnis der letzten Umkreissuche: [{"branche": ..., "betriebe": n}]
+    luecken: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
+    betriebe_im_umkreis: int | None = None
 
 
 class Verein(VereinBasis, table=True):
@@ -84,3 +87,12 @@ class Kandidat(SQLModel, table=True):
     recherche_status: str = "offen"  # offen, wartet, laeuft, fertig, fehler
     recherche_fehler: str | None = None
     status: str = "neu"
+
+
+class Ansprache(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    kandidat_id: int = Field(foreign_key="kandidat.id", index=True, unique=True)
+    brief: str
+    leitfaden: str
+    email_betreff: str
+    email_text: str

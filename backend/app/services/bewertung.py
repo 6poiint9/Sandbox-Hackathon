@@ -14,7 +14,7 @@ from app.data import katalog
 from app.models import Kandidat, Unternehmen, Verein
 from app.providers.llm import Sprachmodell
 from app.providers.websuche import Fundstelle, Websuche, WebsucheFehler
-from app.services.potenzial import richtpreis
+from app.services.potenzial import preis_band
 
 MAX_QUELLEN = 10
 MAX_ZEICHEN_JE_QUELLE = 1500
@@ -112,7 +112,7 @@ def bewerten(
     pakete = [p for p in erg.pakete if p in freie][:2]
     if not pakete:
         pakete = (kandidat.paket_empfehlung or {}).get("passende_pakete", [])[:1]
-    preise = [richtpreis(p, verein) for p in pakete]
+    preise = [preis_band(p, verein) for p in pakete]
     preis = None
     if any(preise):
         preis = {
