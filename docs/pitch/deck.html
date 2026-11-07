@@ -60,7 +60,7 @@ p, li { font-size: 17px; line-height: 1.38; }
 .num { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--signal); color: var(--tafel); font-family: "Barlow Condensed"; font-weight: 700; font-size: 19px; display: flex; align-items: center; justify-content: center; }
 .card { background: #fff; border: 1px solid var(--linie); border-radius: 8px; }
 .shot { border-radius: 8px; overflow: hidden; border: 1px solid var(--linie); background: #fff; box-shadow: 0 10px 28px rgba(23,59,38,.16); }
-.shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.shot img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center top; background: #fff; }
 .todo { background: var(--signal-100); color: #6e4f12; padding: 0 4px; border-radius: 3px; }
 
 /* Folie 1 */
@@ -169,7 +169,7 @@ sup { font-size: .62em; line-height: 0; }
 .person p { font-size: 17px !important; }
 .s5-now { margin-top: 36px !important; }
 .now p { font-size: 17px; }
-.s3-shots .shot img { object-position: top left !important; }
+.s3-shots .shot img { object-position: center top !important; }
 .kicker { margin-top: 12px; font-size: 20px; color: var(--stein-600); }
 .kicker b { color: var(--rasen); font-weight: 600; }
 .road { display: flex; align-items: stretch; gap: 12px; margin-top: 30px; }
@@ -203,7 +203,7 @@ sup { font-size: .62em; line-height: 0; }
         <div class="digits" style="margin-top:8px"><span>6</span><span>2</span><span>8</span><span class="sep">,</span><span>9</span><span>9</span><span>2</span></div>
       </div>
       <div class="stat">
-        <div class="cap">Germans who volunteer, down from 43.6&nbsp;%²</div>
+        <div class="cap">Germans who volunteer, down from 40.0&nbsp;% in 2014²</div>
         <div class="digits" style="margin-top:8px"><span>3</span><span>6</span><span class="sep">.</span><span>7</span><span>%</span></div>
       </div>
     </div>
