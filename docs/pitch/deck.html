@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sponsorenkompass – Pitch Deck</title>
+<style>
+@font-face { font-family: "Barlow"; font-weight: 400; src: url(fonts/barlow-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 400; font-style: italic; src: url(fonts/barlow-latin-400-italic.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 500; src: url(fonts/barlow-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 600; src: url(fonts/barlow-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url(fonts/barlow-condensed-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; src: url(fonts/barlow-condensed-latin-700-normal.woff2) format("woff2"); }
+
+:root {
+  --kreide: #f5f6f1; --tafel: #173b26; --tinte: #1e2420; --linie: #d5dacf;
+  --rasen: #2f6b3f; --rasen-50: #eef4ef; --rasen-100: #d7e6da; --rasen-950: #0e2617;
+  --stein-500: #6a7367; --stein-600: #535b51; --signal: #f2c12e; --signal-100: #fcf0c2;
+}
+@page { size: 1280px 720px; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #888; }
+body { font-family: "Barlow", sans-serif; color: var(--tinte); font-feature-settings: "tnum" 1; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+.slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: var(--kreide); padding: 44px 64px 40px; display: flex; flex-direction: column; page-break-after: always; break-after: page; }
+.slide.dark { background: var(--tafel); color: var(--kreide); }
+
+/* Kopfzeile */
+.top { display: flex; justify-content: space-between; align-items: center; height: 30px; }
+.logo { display: flex; align-items: center; gap: 10px; font-family: "Barlow Condensed"; font-weight: 700; font-size: 25px; color: var(--tafel); }
+.dark .logo { color: var(--kreide); }
+.logo i { display: inline-block; width: 13px; height: 22px; background: var(--signal); transform: skewX(-12deg); }
+.label { font-family: "Barlow Condensed"; font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; color: var(--stein-500); }
+.dark .label { color: rgba(245,246,241,.6); }
+.label b { color: var(--rasen); font-weight: 700; }
+.dark .label b { color: var(--signal); }
+
+h1 { font-family: "Barlow Condensed"; font-weight: 700; font-size: 46px; line-height: 1.04; letter-spacing: .005em; margin-top: 26px; color: var(--tafel); }
+.dark h1 { color: var(--kreide); }
+h1 em { font-style: normal; color: var(--rasen); }
+.dark h1 em { color: var(--signal); }
+h3 { font-family: "Barlow Condensed"; font-weight: 700; font-size: 23px; line-height: 1.1; color: var(--tafel); }
+.dark h3 { color: var(--kreide); }
+p, li { font-size: 17px; line-height: 1.38; }
+.muted { color: var(--stein-600); }
+.dark .muted { color: rgba(245,246,241,.72); }
+.foot { position: absolute; left: 64px; right: 64px; bottom: 18px; font-size: 11.5px; color: var(--stein-500); line-height: 1.35; }
+.dark .foot { color: rgba(245,246,241,.5); }
+
+/* Klappziffern wie auf der Anzeigetafel der App */
+.digits { display: inline-flex; gap: 3px; align-items: stretch; }
+.digits span { position: relative; display: inline-flex; justify-content: center; min-width: .66em; padding: .07em .02em; border-radius: 4px; background: var(--rasen-950); color: var(--signal); font-family: "Barlow Condensed"; font-weight: 700; line-height: 1; box-shadow: inset 0 -2px 0 rgba(0,0,0,.35); }
+.digits span::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,.45); }
+.digits span.sep { background: none; box-shadow: none; min-width: 0; padding: 0 .02em; align-self: flex-end; color: rgba(242,193,46,.85); }
+.digits span.sep::after { display: none; }
+.board { background: var(--tafel); border-radius: 8px; color: var(--kreide); }
+.dark .board { background: rgba(0,0,0,.18); }
+.stat .cap { font-family: "Barlow Condensed"; font-weight: 600; font-size: 18px; color: rgba(245,246,241,.75); }
+.stat .sub { font-size: 14.5px; color: rgba(245,246,241,.62); margin-top: 8px; line-height: 1.35; }
+
+.num { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--signal); color: var(--tafel); font-family: "Barlow Condensed"; font-weight: 700; font-size: 19px; display: flex; align-items: center; justify-content: center; }
+.card { background: #fff; border: 1px solid var(--linie); border-radius: 8px; }
+.shot { border-radius: 8px; overflow: hidden; border: 1px solid var(--linie); background: #fff; box-shadow: 0 10px 28px rgba(23,59,38,.16); }
+.shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.todo { background: var(--signal-100); color: #6e4f12; padding: 0 4px; border-radius: 3px; }
+
+/* Folie 1 */
+.s1-grid { display: grid; grid-template-columns: 470px 1fr; gap: 44px; margin-top: 30px; flex: 1; }
+.s1-grid { align-items: start; margin-top: 26px; }
+.s1-board { padding: 22px 28px; display: flex; flex-direction: column; gap: 18px; }
+.s1-board .digits { font-size: 44px; }
+.pains { display: flex; flex-direction: column; gap: 18px; }
+.pain { display: flex; gap: 16px; align-items: flex-start; }
+.pain h3 { margin-bottom: 3px; }
+.team { font-size: 14.5px; color: rgba(245,246,241,.7); margin-top: 14px; }
+.team b { color: var(--kreide); font-weight: 600; }
+
+/* Folie 2 */
+.steps { display: flex; gap: 10px; margin-top: 26px; }
+.step { flex: 1; display: flex; align-items: center; gap: 10px; background: var(--rasen-50); border-radius: 8px; padding: 11px 14px; font-weight: 600; font-size: 15.5px; color: var(--tafel); }
+.step .num { width: 28px; height: 28px; font-size: 16px; }
+.s2-grid { display: grid; grid-template-columns: 1fr 640px; gap: 40px; margin-top: 26px; flex: 1; min-height: 0; }
+.why { display: flex; flex-direction: column; gap: 20px; }
+.why h3 { margin-bottom: 4px; }
+.outcome { margin-top: auto; background: var(--tafel); color: var(--kreide); border-radius: 8px; padding: 16px 20px; font-size: 17px; line-height: 1.35; }
+.outcome b { color: var(--signal); font-weight: 600; }
+
+/* Folie 3 */
+.s3-shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 26px; }
+.s3-shots figure .shot { height: 250px; }
+.s3-shots figcaption { margin-top: 10px; font-family: "Barlow Condensed"; font-weight: 600; font-size: 19px; color: var(--tafel); }
+.s3-bottom { display: grid; grid-template-columns: 560px 1fr; gap: 32px; margin-top: 24px; }
+.quote { padding: 22px 26px; }
+.quote q { display: block; font-family: "Barlow Condensed"; font-weight: 700; font-size: 31px; line-height: 1.1; quotes: "“" "”"; }
+.quote q::before, .quote q::after { color: var(--signal); }
+.quote cite { display: block; margin-top: 12px; font-style: normal; font-size: 15px; color: rgba(245,246,241,.72); }
+.learn h3 { margin-bottom: 8px; }
+.learn ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.learn li { position: relative; padding-left: 20px; font-size: 16.5px; }
+.learn li::before { content: ""; position: absolute; left: 0; top: 9px; width: 8px; height: 8px; background: var(--signal); transform: skewX(-12deg); }
+
+/* Folie 4 */
+.s4-grid { display: grid; grid-template-columns: 340px 1fr 330px; gap: 28px; margin-top: 28px; align-items: start; }
+.price { padding: 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+.tier { border-radius: 6px; padding: 12px 14px; background: var(--rasen-50); }
+.tier.paid { background: var(--tafel); color: var(--kreide); }
+.tier .t { font-family: "Barlow Condensed"; font-weight: 700; font-size: 17px; letter-spacing: .04em; text-transform: uppercase; color: var(--rasen); }
+.tier.paid .t { color: var(--signal); }
+.tier .big { font-family: "Barlow Condensed"; font-weight: 700; font-size: 38px; line-height: 1; margin: 4px 0 4px; }
+.tier p { font-size: 15px; line-height: 1.3; }
+.roi { font-size: 15px; line-height: 1.35; }
+.roi b { color: var(--tafel); }
+.market { padding: 22px 26px; display: flex; flex-direction: column; gap: 14px; }
+.market .row { display: grid; grid-template-columns: 210px 1fr; gap: 16px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(245,246,241,.14); }
+.market .row:last-child { border-bottom: 0; padding-bottom: 0; }
+.market .digits { font-size: 40px; }
+.market .k { font-family: "Barlow Condensed"; font-weight: 700; font-size: 19px; color: var(--kreide); }
+.market .d { font-size: 14px; color: rgba(245,246,241,.65); line-height: 1.3; margin-top: 2px; }
+.market .eur { color: var(--signal); }
+.punch { margin-top: 26px; background: var(--signal-100); border-radius: 8px; padding: 16px 22px; font-family: "Barlow Condensed"; font-weight: 600; font-size: 25px; color: var(--tafel); }
+.punch b { font-weight: 700; }
+sup { font-size: .62em; line-height: 0; }
+.gtm h3 { margin-bottom: 12px; }
+.gtm ol { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.gtm li { display: flex; gap: 12px; font-size: 15.5px; line-height: 1.32; }
+.gtm li .num { width: 28px; height: 28px; font-size: 16px; }
+.gtm li b { color: var(--tafel); }
+
+/* Folie 5 */
+.s5-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 30px; }
+.person { padding: 22px 24px; background: rgba(0,0,0,.18); border-radius: 8px; display: flex; gap: 18px; }
+.avatar { flex: none; width: 64px; height: 64px; border-radius: 50%; background: var(--signal); color: var(--tafel); font-family: "Barlow Condensed"; font-weight: 700; font-size: 30px; display: flex; align-items: center; justify-content: center; }
+.person h3 { font-size: 26px; }
+.person .role { font-size: 15px; color: var(--signal); font-weight: 600; margin: 2px 0 8px; }
+.person p { font-size: 15.5px; color: rgba(245,246,241,.8); }
+.s5-now { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 26px; }
+.now { display: flex; gap: 14px; }
+.now h3 { margin-bottom: 4px; }
+.ask { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid rgba(245,246,241,.18); padding-top: 18px; margin-bottom: 14px; }
+.ask .a { font-family: "Barlow Condensed"; font-weight: 700; font-size: 30px; color: var(--signal); }
+.ask .links { font-size: 14px; color: rgba(245,246,241,.7); text-align: right; line-height: 1.5; }
+
+/* Entschlackt: mehr Luft, groessere Schrift */
+.lead { font-size: 21px; line-height: 1.35; margin-bottom: 30px; }
+.slide .pains { gap: 26px; }
+.pain h3 { font-size: 26px; }
+.pain p { font-size: 18px; }
+.s1-grid { grid-template-columns: 440px 1fr !important; gap: 64px !important; margin-top: 40px !important; }
+.s1-board { padding: 28px 32px !important; gap: 30px !important; }
+.s1-board .digits { font-size: 56px !important; }
+.s2-grid { grid-template-columns: 1fr 680px !important; gap: 48px !important; margin-top: 26px !important; }
+.why { gap: 26px !important; }
+.outcome { font-size: 20px !important; padding: 18px 22px !important; }
+.s3-shots { margin-top: 32px !important; gap: 28px !important; }
+.s3-shots figure .shot { height: 270px !important; }
+.slide > .quote { margin-top: 28px; display: flex; align-items: baseline; gap: 28px; }
+.slide > .quote q { font-size: 34px; }
+.slide > .quote cite { margin-top: 0; white-space: nowrap; }
+.s4-grid { grid-template-columns: 300px 1fr 300px !important; gap: 36px !important; margin-top: 40px !important; }
+.price { gap: 16px !important; padding: 0 !important; }
+.tier { padding: 16px 18px !important; }
+.tier p { font-size: 16px !important; }
+.market { padding: 26px 30px !important; gap: 18px !important; }
+.market .digits { font-size: 46px !important; }
+.market .k { font-size: 22px !important; }
+.market .d { font-size: 15px !important; }
+.gtm ol { gap: 22px !important; }
+.gtm li { font-size: 18px !important; align-items: center; }
+.s5-grid { margin-top: 40px !important; }
+.person p { font-size: 17px !important; }
+.s5-now { margin-top: 36px !important; }
+.now p { font-size: 17px; }
+.s3-shots .shot img { object-position: top left !important; }
+.kicker { margin-top: 12px; font-size: 20px; color: var(--stein-600); }
+.kicker b { color: var(--rasen); font-weight: 600; }
+.road { display: flex; align-items: stretch; gap: 12px; margin-top: 30px; }
+.road .st { flex: 1; background: var(--rasen-50); border-radius: 8px; padding: 14px 18px; font-size: 16px; line-height: 1.3; color: var(--stein-600); }
+.road .st b { display: block; font-family: "Barlow Condensed"; font-weight: 700; font-size: 21px; color: var(--tafel); }
+.road .st.cur { background: var(--tafel); color: rgba(245,246,241,.8); }
+.road .st.cur b { color: var(--kreide); }
+.road .when { font-family: "Barlow Condensed"; font-weight: 700; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--rasen); }
+.road .st.cur .when { color: var(--signal); }
+.road .arr { align-self: center; font-family: "Barlow Condensed"; font-weight: 700; font-size: 34px; color: var(--signal); }
+.s4-grid { margin-top: 32px !important; }
+.slide > .team { position: absolute; left: 64px; bottom: 44px; margin: 0; font-size: 16px; }
+.s3-shots figure .shot { height: 320px !important; }
+.slide > .quote { margin-top: 34px !important; }
+.s4-grid { margin-top: 52px !important; }
+</style>
+</head>
+<body>
+
+<!-- 1 · PROBLEM -->
+<section class="slide dark">
+  <div class="top">
+    <div class="logo"><i></i>Sponsorenkompass</div>
+    <div class="label"><b>01</b> · Problem</div>
+  </div>
+  <h1>Germany runs on <em>629,000 clubs.</em><br>Their volunteers are running out of time.</h1>
+  <div class="s1-grid">
+    <div class="board s1-board">
+      <div class="stat">
+        <div class="cap">Registered clubs, a record high¹</div>
+        <div class="digits" style="margin-top:8px"><span>6</span><span>2</span><span>8</span><span class="sep">,</span><span>9</span><span>9</span><span>2</span></div>
+      </div>
+      <div class="stat">
+        <div class="cap">Germans who volunteer, down from 43.6&nbsp;%²</div>
+        <div class="digits" style="margin-top:8px"><span>3</span><span>6</span><span class="sep">.</span><span>7</span><span>%</span></div>
+      </div>
+    </div>
+    <div>
+      <p class="muted lead">Club boards find sponsors with the phone book, gut feeling and mass letters.</p>
+      <div class="pains">
+        <div class="pain"><div class="num">1</div><div><h3>No time</h3><p class="muted">Volunteers do this in the evening.</p></div></div>
+        <div class="pain"><div class="num">2</div><div><h3>No know-how</h3><p class="muted">Whom to ask, how, and for how much?</p></div></div>
+        <div class="pain"><div class="num">3</div><div><h3>No continuity</h3><p class="muted">Contacts leave with the board.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <p class="team"><b>Timon</b> · Club treasurer &amp; SBFV lecturer &nbsp;&nbsp;·&nbsp;&nbsp; <b>Nabil</b> · Developer, AI &amp; IT security</p>
+  <div class="foot">¹ ZiviZ im Stifterverband, March 2026 · ² Deutscher Freiwilligensurvey 2014 and 2024</div>
+</section>
+
+<!-- 2 · SOLUTION -->
+<section class="slide">
+  <div class="top">
+    <div class="logo"><i></i>Sponsorenkompass</div>
+    <div class="label"><b>02</b> · Solution</div>
+  </div>
+  <h1><em>Three minutes</em> to the right local sponsors, ready to ask</h1>
+  <p class="kicker"><b>Sponsor data and CRM for clubs, in one.</b> We find the sponsors and keep every relationship in one place.</p>
+  <div class="s2-grid">
+    <div class="why">
+      <div class="pain"><div class="num">1</div><div><h3>Active search</h3><p class="muted">We scan every business around the club.</p></div></div>
+      <div class="pain"><div class="num">2</div><div><h3>Every reason has a source</h3><p class="muted">Plus a matching package and price.</p></div></div>
+      <div class="pain"><div class="num">3</div><div><h3>Ready to send</h3><p class="muted">Letter, phone guide, pipeline.</p></div></div>
+      <div class="outcome">Be the club everyone asks:<br><b>“How did you get all these sponsors?”</b></div>
+    </div>
+    <div class="shot"><img src="shots/analyse.png" alt="Potential analysis with scoreboard and map"></div>
+  </div>
+</section>
+
+<!-- 3 · PRODUCT & VALIDATION -->
+<section class="slide">
+  <div class="top">
+    <div class="logo"><i></i>Sponsorenkompass</div>
+    <div class="label"><b>03</b> · Product &amp; validation</div>
+  </div>
+  <h1>Built in one day, for people who <em>chase sponsors</em></h1>
+  <div class="s3-shots">
+    <figure><div class="shot"><img src="shots/kandidat.png" alt="Candidate with sourced reasons"></div><figcaption>Every match explained</figcaption></figure>
+    <figure><div class="shot"><img src="shots/brief.png" alt="Drafted letter"></div><figcaption>The ask, ready to send</figcaption></figure>
+    <figure><div class="shot"><img src="shots/sponsoren.png" alt="Sponsor pipeline"></div><figcaption>All sponsors in one place</figcaption></figure>
+  </div>
+  <div class="board quote">
+    <q>I’d pay someone 25&nbsp;% of every sponsorship they bring in.</q>
+    <cite>Adam, Head of Sports at a club in Konstanz</cite>
+  </div>
+</section>
+
+<!-- 4 · BUSINESS & GTM -->
+<section class="slide">
+  <div class="top">
+    <div class="logo"><i></i>Sponsorenkompass</div>
+    <div class="label"><b>04</b> · Business model &amp; go-to-market</div>
+  </div>
+  <h1><em>€169 a year,</em> paid back by a single sponsor</h1>
+  <div class="s4-grid">
+    <div class="price">
+      <div class="tier"><div class="t">Free</div><p>Potential analysis and 3 matches</p></div>
+      <div class="tier paid"><div class="t">Club</div><div class="big">€169 / year</div><p>All matches, letters and pipeline</p></div>
+      <p class="roi muted">Comparable tools: €223–390 / year<sup>3</sup></p>
+    </div>
+    <div class="board market">
+      <div class="row"><div class="digits"><span>6</span><span>2</span><span>9</span><span class="sep">k</span></div><div><div class="k">Registered clubs<sup>1</sup></div></div></div>
+      <div class="row"><div class="digits"><span>6</span><span>3</span><span class="sep">k</span></div><div><div class="k">SAM · <span class="eur">€10.6M / year</span></div><div class="d">1 in 10 seeks sponsors<sup>2</sup></div></div></div>
+      <div class="row"><div class="digits"><span>6</span><span class="sep">,</span><span>3</span><span>0</span><span>0</span></div><div><div class="k">SOM · <span class="eur">€1.1M ARR</span></div><div class="d">10&nbsp;% of SAM in 3 years</div></div></div>
+    </div>
+    <div class="gtm">
+      <h3>How we reach clubs</h3>
+      <ol>
+        <li><div class="num">1</div><div><b>Football first,</b> through our network of club boards</div></li>
+        <li><div class="num">2</div><div><b>Visible success:</b> neighbours ask how</div></li>
+        <li><div class="num">3</div><div><b>Roll out</b> to other clubs via associations and club software</div></li>
+      </ol>
+    </div>
+  </div>
+  <div class="road">
+    <div class="st cur"><span class="when">Now</span><b>Subscription</b> €169 / year</div>
+    <div class="arr">›</div>
+    <div class="st"><span class="when">Next</span><b>Club management</b> more of the admin on one platform</div>
+    <div class="arr">›</div>
+    <div class="st"><span class="when">Then</span><b>Deals on the platform</b> commission per closed sponsorship</div>
+  </div>
+  <div class="foot"><sup>1</sup> ZiviZ im Stifterverband, March 2026 · <sup>2</sup> own estimate · <sup>3</sup> Vereinscockpit, clubb, sponsoring-management.com, Nov 2026</div>
+</section>
+
+<!-- 5 · WHY US / WHY NOW -->
+<section class="slide dark">
+  <div class="top">
+    <div class="logo"><i></i>Sponsorenkompass</div>
+    <div class="label"><b>05</b> · Why us / why now</div>
+  </div>
+  <h1>A club insider and a builder,<br>solving a problem <em>we live every season</em></h1>
+  <div class="s5-grid">
+    <div class="person"><div class="avatar">T</div><div><h3>Timon</h3><div class="role">Clubs &amp; product</div><p>Youth football club treasurer, lecturer for club managers (SBFV), Product Owner in SaaS.</p></div></div>
+    <div class="person"><div class="avatar">N</div><div><h3>Nabil</h3><div class="role">Engineering</div><p>Developer with a background in IT security and AI engineering.</p></div></div>
+  </div>
+  <div class="s5-now">
+    <div class="now"><div class="num">1</div><div><h3>AI makes research affordable</h3><p class="muted">Cents per business, not an agency fee.</p></div></div>
+    <div class="now"><div class="num">2</div><div><h3>Clubs grow, volunteers shrink</h3><p class="muted">They need tools that save time.</p></div></div>
+  </div>
+  <div class="ask">
+    <div class="a">We’re looking for pilot clubs and a first association partner.</div>
+  </div>
+</section>
+
+</body>
+</html>
