@@ -61,6 +61,11 @@ export function Anmeldung({ hinweis, onAngemeldet }: { hinweis?: string; onAngem
       <button className="text-sm text-teal-800 underline" onClick={() => { setModus(modus === 'anmelden' ? 'registrieren' : 'anmelden'); setFehler(null) }}>
         {modus === 'anmelden' ? 'Noch kein Konto? Jetzt anlegen' : 'Schon ein Konto? Anmelden'}
       </button>
+      {modus === 'registrieren' && (
+        <p className="text-xs text-slate-500">
+          Mit dem Anlegen des Kontos gilt unsere <a className="text-teal-800 underline" href="#/datenschutz">Datenschutzerklärung</a>.
+        </p>
+      )}
       <p className="text-xs text-slate-500">
         Sicherheit: Passwörter speichern wir nur als Argon2id-Hash und prüfen sie anonym gegen bekannte Datenlecks. Die Sitzung liegt in einem geschützten Cookie, das kein Skript lesen kann.
       </p>

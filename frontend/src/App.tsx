@@ -7,12 +7,15 @@ import Detail from './views/Detail'
 import KontoSeite, { Anmeldung } from './views/KontoSeite'
 import Landing from './views/Landing'
 import Onboarding from './views/Onboarding'
+import { Datenschutz, Impressum } from './views/Rechtliches'
 import Sponsoren from './views/Sponsoren'
 
 // Einfache Hash-Navigation: #/ · #/verein/1 · #/verein/1/kandidat/5 · #/verein/1/sponsoren
 type Ansicht =
   | { art: 'landing' }
   | { art: 'konto' }
+  | { art: 'impressum' }
+  | { art: 'datenschutz' }
   | { art: 'start' }
   | { art: 'analyse'; verein: number }
   | { art: 'detail'; verein: number; kandidat: number }
@@ -24,6 +27,8 @@ function lesen(): Ansicht {
   const verein = Number(teile[1])
   if (teile[0] === 'start') return { art: 'start' }
   if (teile[0] === 'konto') return { art: 'konto' }
+  if (teile[0] === 'impressum') return { art: 'impressum' }
+  if (teile[0] === 'datenschutz') return { art: 'datenschutz' }
   if (teile[0] !== 'verein' || !verein) return { art: 'landing' }
   if (teile[2] === 'kandidat' && Number(teile[3])) return { art: 'detail', verein, kandidat: Number(teile[3]) }
   if (teile[2] === 'sponsoren') return { art: 'sponsoren', verein }
@@ -55,7 +60,7 @@ export default function App() {
   }, [])
 
   const verein = 'verein' in ansicht ? ansicht.verein : null
-  const braucht_anmeldung = ansicht.art !== 'landing' && ansicht.art !== 'konto'
+  const braucht_anmeldung = !['landing', 'konto', 'impressum', 'datenschutz'].includes(ansicht.art)
 
   return (
     <div className="min-h-screen">
@@ -86,6 +91,8 @@ export default function App() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         {ansicht.art === 'landing' && <Landing onStart={() => gehe('/start')} />}
+        {ansicht.art === 'impressum' && <Impressum />}
+        {ansicht.art === 'datenschutz' && <Datenschutz />}
         {ansicht.art === 'konto' && geprueft && <KontoSeite konto={konto} onVerein={(id) => gehe(`/verein/${id}`)} onStart={() => gehe('/start')} />}
         {braucht_anmeldung && geprueft && !konto && (
           <Anmeldung
@@ -105,6 +112,14 @@ export default function App() {
           <Sponsoren vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
         )}
       </main>
+
+      <footer className="border-t border-slate-200 bg-white px-4 py-6 text-center text-xs text-slate-500">
+        <a className="hover:text-slate-800" href="#/impressum">Impressum</a>
+        <span className="mx-2">·</span>
+        <a className="hover:text-slate-800" href="#/datenschutz">Datenschutz</a>
+        <span className="mx-2">·</span>
+        Sponsorenkompass – entstanden beim Cursor × Sandbox Founders Hackathon, Stuttgart 2026
+      </footer>
     </div>
   )
 }

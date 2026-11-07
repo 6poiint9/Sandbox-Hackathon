@@ -25,6 +25,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
   const [verein, setVerein] = useState('')
   const [rolle, setRolle] = useState('')
   const [pilot, setPilot] = useState(true)
+  const [einwilligung, setEinwilligung] = useState(false)
   const [zaehler, setZaehler] = useState<Zaehler | null>(null)
   const [fertig, setFertig] = useState(false)
   const [fehler, setFehler] = useState<string | null>(null)
@@ -139,17 +140,20 @@ export default function Landing({ onStart }: { onStart: () => void }) {
                 <input type="checkbox" className="accent-teal-700" checked={pilot} onChange={(e) => setPilot(e.target.checked)} />
                 Wir möchten als Pilotverein mitmachen
               </label>
-              <Knopf type="submit">Anmelden</Knopf>
+              <label className="flex items-start gap-2 text-xs text-slate-600">
+                <input type="checkbox" required className="mt-0.5 accent-teal-700" checked={einwilligung} onChange={(e) => setEinwilligung(e.target.checked)} />
+                <span>
+                  Ich willige ein, dass Sponsorenkompass meine Angaben speichert, um mich zum Angebot zu kontaktieren. Widerruf jederzeit per
+                  E-Mail. Details in der <a className="text-teal-800 underline" href="#/datenschutz">Datenschutzerklärung</a>.
+                </span>
+              </label>
+              <Knopf type="submit" disabled={!einwilligung}>Anmelden</Knopf>
               <Fehler text={fehler} />
-              <p className="text-xs text-slate-500">Wir nutzen eure Angaben nur, um euch zu Sponsorenkompass zu kontaktieren. Abmeldung jederzeit per E-Mail.</p>
             </form>
           )}
         </div>
       </section>
 
-      <footer className="px-4 py-8 text-center text-xs text-slate-500">
-        Sponsorenkompass · entstanden beim Cursor × Sandbox Founders Hackathon, Stuttgart 2026
-      </footer>
     </div>
   )
 }
