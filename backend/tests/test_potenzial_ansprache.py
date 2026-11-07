@@ -14,7 +14,7 @@ from app.services.potenzial import berechnen
 
 
 def test_potenzial_rechnet_nur_freie_pakete_mittleres_band():
-    v = Verein(id=1, name="FC", ort="O", spielklasse="Bezirksliga", zuschauer_schnitt=100,
+    v = Verein(id=1, konto_id=1, name="FC", ort="O", spielklasse="Bezirksliga", zuschauer_schnitt=100,
                mannschaften=[{"name": "1. Herren"}, {"name": "D-Jugend"}, {"name": "E-Junioren"}],
                luecken=[{"branche": "Autohäuser", "betriebe": 12}])
     inventar = [
@@ -55,7 +55,7 @@ def client(monkeypatch):
     eng = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     SQLModel.metadata.create_all(eng)
     with Session(eng) as s:
-        s.add(Verein(id=1, name="FC Test 03", ort="Emmendingen"))
+        s.add(Verein(id=1, konto_id=1, name="FC Test 03", ort="Emmendingen"))
         s.add(Unternehmen(id=1, osm_id="n/1", name="Bäckerei Müller", branche="Bäckereien", lat=0, lon=0))
         s.add(Unternehmen(id=2, osm_id="n/2", name="Offen GmbH", branche="Handel", lat=0, lon=0))
         s.add(Kandidat(id=1, verein_id=1, unternehmen_id=1, entfernung_km=1.25, vorfilter_score=80, score=82,
@@ -72,7 +72,7 @@ def client(monkeypatch):
     modell = FakeModell()
     app.dependency_overrides[get_session] = override
     monkeypatch.setattr("app.routers.analyse.text_modell", lambda: modell)
-    with TestClient(app) as c:
+    with TestClient(app, headers={"X-Sponsorenkompass": "1"}) as c:
         c.modell = modell
         yield c
     app.dependency_overrides.clear()

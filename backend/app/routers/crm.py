@@ -19,6 +19,7 @@ from app.models import (
     Unternehmen,
     Verein,
 )
+from app.services.auth import verein_von
 from app.services.potenzial import belegte_einheiten, preis_band
 
 router = APIRouter(tags=["crm"])
@@ -136,6 +137,8 @@ def zum_sponsor(kandidat_id: int, daten: Uebernahme, session: Session = Depends(
     session.refresh(s)
     if daten.asset_id:
         asset = _hole(session, InventarPosten, daten.asset_id, "Asset")
+        if asset.verein_id != k.verein_id:
+            raise HTTPException(404, "Asset nicht gefunden")
         session.add(AssetVergabe(asset_id=asset.id, sponsor_id=s.id, anzahl=daten.anzahl,
                                  preis_eur=daten.betrag_eur, bis=daten.laufzeit_bis))
     k.status = "zusage"
@@ -176,6 +179,10 @@ def aktivitaet_anlegen(verein_id: int, daten: AktivitaetNeu, session: Session = 
         raise HTTPException(422, f"Art muss eine von {', '.join(AKTIVITAET_ARTEN)} sein")
     if not daten.text.strip():
         raise HTTPException(422, "Text fehlt")
+    # Referenzierte Objekte müssen zum selben Verein gehören
+    for art, id_ in (("sponsor_id", daten.sponsor_id), ("kandidat_id", daten.kandidat_id)):
+        if id_ is not None and verein_von(session, art, id_) != verein_id:
+            raise HTTPException(404, "Nicht gefunden")
     a = Aktivitaet(verein_id=verein_id, **daten.model_dump(exclude_none=True))
     session.add(a)
     session.commit()
@@ -341,6 +348,8 @@ class VergabeNeu(BaseModel):
 def vergabe_anlegen(asset_id: int, daten: VergabeNeu, session: Session = Depends(get_session)):
     p = _hole(session, InventarPosten, asset_id, "Asset")
     s = _hole(session, Sponsor, daten.sponsor_id, "Sponsor")
+    if s.verein_id != p.verein_id:
+        raise HTTPException(404, "Sponsor nicht gefunden")
     vorhanden = session.exec(select(AssetVergabe).where(AssetVergabe.asset_id == asset_id)).all()
     # Kurzform "komplett vergeben" aus dem Onboarding in echte Einheiten auflösen
     if not p.verfuegbar:

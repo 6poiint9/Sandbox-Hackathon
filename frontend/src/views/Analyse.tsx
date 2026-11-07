@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { api, euro, STATUS_TEXT, tokenLesen } from '../api'
+import { api, euro, STATUS_TEXT } from '../api'
 import type { AnalyseZustand, Kandidat, KandidatStatus, Potenzial, Verein } from '../api'
 import KandidatenKarte from '../components/KandidatenKarte'
 import { Fehler, Karte, Knopf, Lader, ScoreBadge, eingabe } from '../components/ui'
@@ -82,8 +82,6 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
           <Kennzahl wert={String(fertigAnzahl)} text="mit Quellen geprüft" />
         </div>
       </section>
-
-      {verein.konto_id == null && <Speichern vereinId={vereinId} onGespeichert={laden} />}
 
       {zustand && (laeuft || zustand.suche_status === 'fehler') && (
         <Benachrichtigung vereinId={vereinId} zustand={zustand} kandidaten={kandidaten.length} onAenderung={setZustand} />
@@ -218,27 +216,6 @@ export default function Analyse({ vereinId, onOeffnen }: { vereinId: number; onO
           </div>
         </div>
       </Karte>
-      <Fehler text={fehler} />
-    </div>
-  )
-}
-
-function Speichern({ vereinId, onGespeichert }: { vereinId: number; onGespeichert: () => void }) {
-  const [fehler, setFehler] = useState<string | null>(null)
-  if (!tokenLesen()) {
-    return (
-      <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
-        Diese Analyse ist noch keinem Konto zugeordnet und für jeden mit dem Link sichtbar.{' '}
-        <a className="font-medium text-teal-800 underline" href="#/konto">Konto anlegen oder anmelden</a>, dann hier übernehmen.
-      </p>
-    )
-  }
-  return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
-      <span>Diese Analyse ist noch keinem Konto zugeordnet.</span>
-      <Knopf art="sekundaer" onClick={() => api.post(`/konto/vereine/${vereinId}`).then(onGespeichert).catch((e: Error) => setFehler(e.message))}>
-        In mein Konto übernehmen
-      </Knopf>
       <Fehler text={fehler} />
     </div>
   )

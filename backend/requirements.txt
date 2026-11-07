@@ -8,3 +8,4 @@ python-multipart==0.0.33
 sqlmodel==0.0.48
 uvicorn[standard]==0.54.0
 google-genai==3.0.0
+argon2-cffi==25.1.0

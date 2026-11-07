@@ -1,28 +1,15 @@
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+export const API_URL = import.meta.env.VITE_API_URL ?? '/api'
 
-// Anmelde-Token: nur im Browser dieses Geräts. Speicher kann gesperrt sein (privates Fenster).
-const TOKEN_SCHLUESSEL = 'sponsorenkompass.token'
-export function tokenLesen(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_SCHLUESSEL)
-  } catch {
-    return null
-  }
-}
-export function tokenSetzen(token: string | null) {
-  try {
-    if (token) localStorage.setItem(TOKEN_SCHLUESSEL, token)
-    else localStorage.removeItem(TOKEN_SCHLUESSEL)
-  } catch {
-    /* ohne Speicher bleibt man nur bis zum Neuladen angemeldet */
-  }
+// Anmeldung läuft über ein HttpOnly-Cookie, das JavaScript nie sieht.
+// Jede Anfrage trägt den CSRF-Header; das Backend lehnt Änderungen ohne ihn ab.
+export const CSRF_HEADER = { 'X-Sponsorenkompass': '1' }
+
+export function kontoGeaendert() {
   window.dispatchEvent(new Event('konto-geaendert'))
 }
 
 function mitToken(init?: RequestInit): RequestInit {
-  const token = tokenLesen()
-  if (!token) return init ?? {}
-  return { ...init, headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${token}` } }
+  return { ...init, credentials: 'same-origin', headers: { ...(init?.headers ?? {}), ...CSRF_HEADER } }
 }
 
 export async function herunterladen(pfad: string, dateiname: string) {

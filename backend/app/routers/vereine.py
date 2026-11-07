@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from app.data import katalog
 from app.db import get_session
 from app.models import InventarPosten, Konto, Sponsor, SponsorBasis, Verein, VereinBasis
-from app.services.auth import optionales_konto
+from app.services.auth import aktuelles_konto
 from app.services.csv_import import importieren
 
 router = APIRouter(tags=["vereine"])
@@ -27,10 +27,10 @@ def _verein(session: Session, verein_id: int) -> Verein:
 def verein_anlegen(
     daten: VereinBasis,
     session: Session = Depends(get_session),
-    konto: Konto | None = Depends(optionales_konto),
+    konto: Konto = Depends(aktuelles_konto),
 ) -> Verein:
     verein = Verein.model_validate(daten)
-    verein.konto_id = konto.id if konto else None
+    verein.konto_id = konto.id
     session.add(verein)
     session.commit()
     session.refresh(verein)
@@ -47,7 +47,7 @@ def verein_aendern(
     verein_id: int, daten: dict, session: Session = Depends(get_session)
 ) -> Verein:
     verein = _verein(session, verein_id)
-    erlaubt = set(VereinBasis.model_fields)
+    erlaubt = set(VereinBasis.model_fields) - {"suche_status", "suche_fehler"}
     for feld, wert in daten.items():
         if feld in erlaubt:
             setattr(verein, feld, wert)

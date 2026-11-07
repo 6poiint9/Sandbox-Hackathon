@@ -7,6 +7,7 @@ Kandidaten im Umkreis -> Recherche der besten N (wartet, bis fertig).
 """
 
 import argparse
+import os
 import sys
 import time
 
@@ -27,7 +28,17 @@ def main() -> None:
     p.add_argument("--zuschauer", type=int, default=150)
     p.add_argument("--recherche", type=int, default=3)
     a = p.parse_args()
-    c = httpx.Client(base_url=a.api, timeout=600)
+    c = httpx.Client(base_url=a.api, timeout=600, headers={"X-Sponsorenkompass": "1"})
+    email, passwort = os.environ.get("DEMO_EMAIL"), os.environ.get("DEMO_PASSWORT")
+    if not email or not passwort:
+        sys.exit("Bitte DEMO_EMAIL und DEMO_PASSWORT setzen (Konto wird bei Bedarf angelegt).")
+    r = c.post("/konto/anmelden", json={"email": email, "passwort": passwort})
+    if r.status_code == 401:
+        r = c.post("/konto/registrieren", json={"email": email, "passwort": passwort, "name": "Demo"})
+    r.raise_for_status()
+    # Das Sitzungscookie ist "Secure"; über http://localhost schickt httpx es nicht von selbst mit.
+    sitzung = next((k for k in r.cookies if "sk_sitzung" in k), None)
+    c.headers["Cookie"] = f"{sitzung}={r.cookies[sitzung]}"
 
     t = time.time()
     v = c.post("/onboarding/analyse", json={"website": a.website, "ort": a.ort}).raise_for_status().json()

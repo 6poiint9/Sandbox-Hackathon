@@ -67,14 +67,14 @@ Sponsorenkompass bringt beides zusammen: **Jeder Kandidat bekommt ein empfohlene
 - [x] **Sponsoren-CRM**: Bestand bearbeiten, Kontakt, Status, Betrag, Laufzeit, Verlauf, Wiedervorlagen, auslaufende Verträge
 - [x] **Assets**: Banden, Trikots, Social Media … mit Anzahl, Vergaben an Sponsoren, Preis, Laufzeit
 - [x] Kandidat nach Zusage als Sponsor übernehmen
-- [x] **Konten**: Registrierung, Anmeldung, „Meine Vereine“; Vereinsdaten nur für das eigene Konto
+- [x] **Konten** nach aktuellem Sicherheitsstandard (siehe Sicherheit); Analyse nur nach Anmeldung
 - [x] CSV-Export
 
 **Als Nächstes**
 - [ ] „Ähnlich wie euer bester Sponsor“
 - [ ] Branchenkonflikte erkennen (z. B. zwei Autohäuser bei Exklusivität)
 - [ ] Sponsoring-Mappe als PDF
-- [ ] Zugriffsschutz auch für Endpunkte ohne Vereins-ID im Pfad (Kandidat, Sponsor, Asset), Passwort zurücksetzen
+- [ ] E-Mail-Bestätigung, Passwort zurücksetzen, Zwei-Faktor/Passkeys
 
 **Bewusst nicht:** automatischer Massenversand, Bezahlung, Vertragsdokumente und Rechnungen.
 
@@ -187,6 +187,18 @@ pytest
 ```
 
 ---
+
+## Sicherheit
+
+Analysen gibt es nur mit Konto; alle Vereinsdaten sind ausschließlich für das eigene Konto sichtbar. Umgesetzt nach OWASP ASVS und NIST SP 800-63B:
+
+- **Passwörter:** Argon2id (64 MiB, 3 Durchläufe), mindestens 12 Zeichen, keine häufigen oder aus Datenlecks bekannten Passwörter (Have I Been Pwned, k-Anonymität – nur 5 Zeichen eines Hashes verlassen den Server)
+- **Sitzung:** zufälliges 256-Bit-Token nur im `__Host-`-Cookie mit `HttpOnly`, `Secure`, `SameSite=Strict`; in der Datenbank nur sein SHA-256. 7 Tage absolute Laufzeit, Abmeldung nach 24 h Inaktivität, neue Sitzung bei jeder Anmeldung, „auf allen Geräten abmelden“, Passwortwechsel beendet andere Sitzungen
+- **Angriffsschutz:** Begrenzung von Anmeldeversuchen (E-Mail und IP), gleiche Antwort und Laufzeit bei unbekannter E-Mail, CSRF-Header- und Origin-Prüfung, Sicherheits-Header (HSTS, CSP, X-Frame-Options, nosniff), Kostenbremse für Analysen je Konto
+- **Mandantentrennung:** Jedes Konto ist ein Mandant. Alle Vereinsdaten (Verein, Sponsoren, Kandidaten, Ansprachen, Assets, Vergaben, Aktivitäten) hängen über den Verein am Konto; jede ID im Pfad und jede ID im Anfragetext wird gegen den Mandanten geprüft, Fremdes ist 404 (verrät nicht einmal die Existenz). Zwei automatische Tests sichern das ab: Jeder Endpunkt muss geschützt oder ausdrücklich öffentlich sein, und ein zweiter Mandant ruft jeden Endpunkt mit jeder Methode und fremden IDs auf, ohne je Erfolg zu haben ([tests/test_mandanten.py](backend/tests/test_mandanten.py)). Gemeinsam genutzt werden nur öffentliche Daten (Betriebe aus Google/OSM, Sponsoring-Katalog, Website-Abrufe).
+- **Betrieb:** Frontend und API auf demselben Ursprung (lokal über den Vite-Proxy `/api`), in Produktion nur über HTTPS
+
+Noch offen: E-Mail-Bestätigung und Passwort-Zurücksetzen (brauchen SMTP), Zwei-Faktor-Anmeldung bzw. Passkeys, Begrenzer für mehrere Server (z. B. Redis).
 
 ## Recht und Datenschutz
 

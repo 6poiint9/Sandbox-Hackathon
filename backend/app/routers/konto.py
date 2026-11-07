@@ -1,23 +1,29 @@
-"""Registrierung, Anmeldung, eigene Vereine."""
+"""Registrierung, Anmeldung, Sitzungen, Passwort ändern, eigene Vereine."""
 
 import re
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from app.db import get_session
-from app.models import Konto, Sitzung, Verein
+from app.models import Konto, Verein
 from app.services.auth import (
-    konto_pflicht,
+    BEGRENZER,
+    aktuelles_konto,
+    alle_sitzungen_beenden,
+    braucht_neuen_hash,
+    client_ip,
     passwort_hashen,
     passwort_pruefen,
-    sitzung_anlegen,
-    token_hash,
+    passwort_regeln,
+    sitzung_beenden,
+    sitzung_starten,
 )
 
 router = APIRouter(prefix="/konto", tags=["konto"])
-EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+EMAIL = re.compile(r"^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$")
+FALSCH = "E-Mail oder Passwort stimmt nicht."
 
 
 class KontoAnsicht(BaseModel):
@@ -26,56 +32,90 @@ class KontoAnsicht(BaseModel):
     name: str | None
 
 
-class Anmeldung(BaseModel):
+class Registrierung(BaseModel):
     email: str
     passwort: str
     name: str | None = None
 
 
-class AnmeldeAntwort(BaseModel):
-    token: str
-    konto: KontoAnsicht
+class Login(BaseModel):
+    email: str
+    passwort: str
+
+
+class PasswortWechsel(BaseModel):
+    altes_passwort: str
+    neues_passwort: str
 
 
 def _ansicht(k: Konto) -> KontoAnsicht:
     return KontoAnsicht(id=k.id, email=k.email, name=k.name)
 
 
-@router.post("/registrieren", response_model=AnmeldeAntwort)
-def registrieren(daten: Anmeldung, session: Session = Depends(get_session)):
+@router.post("/registrieren", response_model=KontoAnsicht)
+def registrieren(daten: Registrierung, request: Request, response: Response, session: Session = Depends(get_session)):
+    BEGRENZER.pruefen(f"reg:{client_ip(request)}", 5, 3600)
     email = daten.email.strip().lower()
-    if not EMAIL.match(email):
-        raise HTTPException(422, "Bitte eine gültige E-Mail-Adresse eintragen")
-    if len(daten.passwort) < 8:
-        raise HTTPException(422, "Das Passwort braucht mindestens 8 Zeichen")
+    if not EMAIL.match(email) or len(email) > 254:
+        raise HTTPException(422, "Bitte eine gültige E-Mail-Adresse eintragen.")
+    passwort_regeln(daten.passwort, email)
     if session.exec(select(Konto).where(Konto.email == email)).first():
-        raise HTTPException(409, "Für diese E-Mail gibt es schon ein Konto – bitte anmelden")
-    k = Konto(email=email, name=(daten.name or "").strip() or None, passwort_hash=passwort_hashen(daten.passwort))
+        raise HTTPException(409, "Mit dieser E-Mail ist keine Registrierung möglich. Schon ein Konto? Bitte anmelden.")
+    k = Konto(email=email, name=(daten.name or "").strip()[:100] or None, passwort_hash=passwort_hashen(daten.passwort))
     session.add(k)
     session.commit()
     session.refresh(k)
-    return AnmeldeAntwort(token=sitzung_anlegen(session, k.id), konto=_ansicht(k))
+    sitzung_starten(session, response, k.id)
+    return _ansicht(k)
 
 
-@router.post("/anmelden", response_model=AnmeldeAntwort)
-def anmelden(daten: Anmeldung, session: Session = Depends(get_session)):
-    k = session.exec(select(Konto).where(Konto.email == daten.email.strip().lower())).first()
-    if not k or not passwort_pruefen(daten.passwort, k.passwort_hash):
-        raise HTTPException(401, "E-Mail oder Passwort stimmt nicht")
-    return AnmeldeAntwort(token=sitzung_anlegen(session, k.id), konto=_ansicht(k))
+@router.post("/anmelden", response_model=KontoAnsicht)
+def anmelden(daten: Login, request: Request, response: Response, session: Session = Depends(get_session)):
+    email = daten.email.strip().lower()
+    BEGRENZER.pruefen(f"login-ip:{client_ip(request)}", 20, 900)
+    BEGRENZER.pruefen(f"login-mail:{email}", 5, 900)
+    k = session.exec(select(Konto).where(Konto.email == email)).first()
+    if not passwort_pruefen(daten.passwort, k.passwort_hash if k else None) or not k:
+        raise HTTPException(401, FALSCH)
+    BEGRENZER.zuruecksetzen(f"login-mail:{email}")
+    if braucht_neuen_hash(k.passwort_hash):
+        k.passwort_hash = passwort_hashen(daten.passwort)
+        session.add(k)
+        session.commit()
+    sitzung_starten(session, response, k.id)  # immer neue Sitzung (kein Session Fixation)
+    return _ansicht(k)
 
 
 @router.post("/abmelden", status_code=204)
-def abmelden(authorization: str | None = Header(default=None), session: Session = Depends(get_session)) -> None:
-    if authorization and authorization.lower().startswith("bearer "):
-        s = session.get(Sitzung, token_hash(authorization[7:].strip()))
-        if s:
-            session.delete(s)
-            session.commit()
+def abmelden(request: Request, response: Response, session: Session = Depends(get_session)) -> None:
+    sitzung_beenden(session, request, response)
+
+
+@router.post("/ueberall-abmelden", status_code=204)
+def ueberall_abmelden(request: Request, response: Response, konto: Konto = Depends(aktuelles_konto),
+                      session: Session = Depends(get_session)) -> None:
+    alle_sitzungen_beenden(session, konto.id)
+    sitzung_beenden(session, request, response)
+
+
+@router.post("/passwort", response_model=KontoAnsicht)
+def passwort_aendern(daten: PasswortWechsel, request: Request, response: Response,
+                     konto: Konto = Depends(aktuelles_konto), session: Session = Depends(get_session)):
+    BEGRENZER.pruefen(f"pw:{konto.id}", 5, 900)
+    if not passwort_pruefen(daten.altes_passwort, konto.passwort_hash):
+        raise HTTPException(401, "Das bisherige Passwort stimmt nicht.")
+    passwort_regeln(daten.neues_passwort, konto.email)
+    konto.passwort_hash = passwort_hashen(daten.neues_passwort)
+    session.add(konto)
+    session.commit()
+    alle_sitzungen_beenden(session, konto.id)  # alle anderen Geräte abmelden
+    sitzung_starten(session, response, konto.id)
+    return _ansicht(konto)
 
 
 @router.get("/ich", response_model=KontoAnsicht)
-def ich(konto: Konto = Depends(konto_pflicht)):
+def ich(response: Response, konto: Konto = Depends(aktuelles_konto)):
+    response.headers["Cache-Control"] = "no-store"
     return _ansicht(konto)
 
 
@@ -87,20 +127,6 @@ class VereinKurz(BaseModel):
 
 
 @router.get("/vereine", response_model=list[VereinKurz])
-def meine_vereine(konto: Konto = Depends(konto_pflicht), session: Session = Depends(get_session)):
+def meine_vereine(konto: Konto = Depends(aktuelles_konto), session: Session = Depends(get_session)):
     vereine = session.exec(select(Verein).where(Verein.konto_id == konto.id)).all()
     return [VereinKurz(id=v.id, name=v.name, ort=v.ort, spielklasse=v.spielklasse) for v in vereine]
-
-
-@router.post("/vereine/{verein_id}", response_model=list[VereinKurz])
-def verein_uebernehmen(verein_id: int, konto: Konto = Depends(konto_pflicht), session: Session = Depends(get_session)):
-    """Eine ohne Konto gestartete Analyse ins eigene Konto übernehmen."""
-    v = session.get(Verein, verein_id)
-    if not v:
-        raise HTTPException(404, "Verein nicht gefunden")
-    if v.konto_id not in (None, konto.id):
-        raise HTTPException(403, "Dieser Verein gehört zu einem anderen Konto")
-    v.konto_id = konto.id
-    session.add(v)
-    session.commit()
-    return meine_vereine(konto, session)

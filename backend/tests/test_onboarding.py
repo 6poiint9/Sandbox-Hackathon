@@ -151,7 +151,7 @@ def client(monkeypatch):
 
     app.dependency_overrides[get_session] = session_override
     monkeypatch.setattr("app.routers.onboarding.websuche", lambda: FakeSuche())
-    with TestClient(app) as c:
+    with TestClient(app, headers={"X-Sponsorenkompass": "1"}) as c:
         yield c
     app.dependency_overrides.clear()
 

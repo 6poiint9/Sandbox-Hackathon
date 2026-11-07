@@ -172,3 +172,5 @@ class Sitzung(SQLModel, table=True):
     token_hash: str = Field(primary_key=True)  # sha256 des Tokens, das Token selbst wird nie gespeichert
     konto_id: int = Field(foreign_key="konto.id", index=True)
     erstellt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ablauf: datetime | None = None
+    letzter_zugriff: datetime | None = None

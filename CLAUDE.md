@@ -97,6 +97,9 @@ docs/
 
 ## Sicherheit
 
+- **Mandantentrennung ist Pflicht.** Jeder neue Router wird in `main.py` mit `dependencies=[Depends(zugriff)]` eingebunden. IDs im Pfad heißen `verein_id`, `kandidat_id`, `sponsor_id`, `asset_id`, `vergabe_id` oder `aktivitaet_id` (dann prüft `zugriff` automatisch). IDs im Anfragetext immer mit `verein_von` gegen den Verein prüfen. Fremdes ist 404. `tests/test_mandanten.py` muss grün bleiben – öffentliche Endpunkte nur nach Rückfrage in `OEFFENTLICH` eintragen.
+- Anmeldung nur über das HttpOnly-Cookie; kein Token in JavaScript, localStorage oder URLs. Zustandsändernde Anfragen brauchen den Header `X-Sponsorenkompass: 1`.
+
 - Keys nur in `.env`, nie im Code, nie im Repo. `.env.example` ohne echte Werte pflegen.
 - Personenbezogene Daten: nur öffentliche Kontakte (Impressum), mit Quelle.
 

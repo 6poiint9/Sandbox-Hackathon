@@ -2,7 +2,8 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
@@ -10,7 +11,7 @@ from app.data import katalog
 from app import models  # noqa: F401 - registriert die Tabellen
 from app.db import init_db
 from app.routers import analyse, crm, kandidaten, konto, landing, onboarding, vereine
-from app.services.auth import vereinszugriff
+from app.services.auth import CSRF_HEADER, zugriff
 
 
 @asynccontextmanager
@@ -24,14 +25,42 @@ app = FastAPI(title="Sponsorenkompass", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_url],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", CSRF_HEADER],
 )
-app.include_router(onboarding.router)
-app.include_router(vereine.router, dependencies=[Depends(vereinszugriff)])
-app.include_router(kandidaten.router, dependencies=[Depends(vereinszugriff)])
-app.include_router(analyse.router, dependencies=[Depends(vereinszugriff)])
-app.include_router(crm.router, dependencies=[Depends(vereinszugriff)])
+
+SICHER = {"GET", "HEAD", "OPTIONS"}
+SICHERHEITS_HEADER = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "same-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+}
+
+
+@app.middleware("http")
+async def csrf_und_header(request: Request, call_next):
+    """CSRF: zustandsändernde Anfragen brauchen unseren Header (Browser senden ihn
+    cross-site nur nach CORS-Freigabe) und, falls vorhanden, einen erlaubten Origin."""
+    if request.method not in SICHER:
+        origin = request.headers.get("origin")
+        erlaubt = {settings.frontend_url.rstrip("/"), str(request.base_url).rstrip("/")}
+        if request.headers.get(CSRF_HEADER) != "1" or (origin and origin.rstrip("/") not in erlaubt):
+            return JSONResponse({"detail": "Anfrage abgelehnt (CSRF-Schutz)."}, status_code=403)
+    antwort = await call_next(request)
+    for k, v in SICHERHEITS_HEADER.items():
+        antwort.headers.setdefault(k, v)
+    if settings.cookie_secure:
+        antwort.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return antwort
+app.include_router(onboarding.router, dependencies=[Depends(zugriff)])
+app.include_router(vereine.router, dependencies=[Depends(zugriff)])
+app.include_router(kandidaten.router, dependencies=[Depends(zugriff)])
+app.include_router(analyse.router, dependencies=[Depends(zugriff)])
+app.include_router(crm.router, dependencies=[Depends(zugriff)])
 app.include_router(landing.router)
 app.include_router(konto.router)
 

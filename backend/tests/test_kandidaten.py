@@ -96,7 +96,7 @@ def test_api_kandidaten_suchen_und_status(osm_gemockt, monkeypatch):
     app.dependency_overrides[get_session] = session_override
     monkeypatch.setattr("app.services.geo.geokodieren", lambda ort: VEREIN)
     try:
-        with TestClient(app) as c:
+        with TestClient(app, headers={"X-Sponsorenkompass": "1"}) as c:
             vid = c.post("/vereine", json={"name": "FC Test", "ort": "Teststadt"}).json()["id"]
             c.post(f"/vereine/{vid}/sponsoren", json=[{"firma": "Elektro Maurer"}])
             antwort = c.post(f"/vereine/{vid}/kandidaten?anzahl=10")
@@ -148,7 +148,7 @@ def test_analyse_im_hintergrund_mit_mail(osm_gemockt, monkeypatch, tmp_path):
     monkeypatch.setattr(analyse_job, "ausfuehren", lambda vid, n: echt(vid, n, eng))
     app.dependency_overrides[get_session] = session_override
     try:
-        with TestClient(app) as c:
+        with TestClient(app, headers={"X-Sponsorenkompass": "1"}) as c:
             vid = c.post("/vereine", json={"name": "FC Test", "ort": "Teststadt"}).json()["id"]
             assert c.put(f"/vereine/{vid}/benachrichtigung", json={"email": "kein-mail"}).status_code == 422
             z = c.post(f"/vereine/{vid}/analyse?recherche_anzahl=2", json={"email": "vorstand@fc-test.example"}).json()

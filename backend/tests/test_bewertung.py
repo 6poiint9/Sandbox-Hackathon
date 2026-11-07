@@ -7,7 +7,7 @@ from app.providers.websuche import Fundstelle, WebsucheFehler
 from app.services import bewertung, potenzial, recherche
 from app.services.bewertung import Grund, ModellBewertung
 
-VEREIN = Verein(id=1, name="FC Test", ort="Emmendingen", spielklasse="Landesliga", zuschauer_schnitt=150)
+VEREIN = Verein(id=1, konto_id=1, name="FC Test", ort="Emmendingen", spielklasse="Landesliga", zuschauer_schnitt=150)
 U = Unternehmen(id=1, osm_id="n/1", name="Bäckerei Müller", branche="Bäckereien", lat=0, lon=0,
                 website="https://mueller.example")
 K = Kandidat(id=1, verein_id=1, unternehmen_id=1, entfernung_km=1.2, vorfilter_score=80,
@@ -90,7 +90,7 @@ def test_recherche_faengt_fehler_pro_kandidat_ab(monkeypatch, tmp_path):
     eng = create_engine(f"sqlite:///{tmp_path / 't.db'}", connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(eng)
     with Session(eng) as s:
-        s.add(Verein(id=1, name="FC", ort="Ort"))
+        s.add(Verein(id=1, konto_id=1, name="FC", ort="Ort"))
         s.add(Unternehmen(id=1, osm_id="n/1", name="Gut", branche="Handwerk", lat=0, lon=0))
         s.add(Unternehmen(id=2, osm_id="n/2", name="Kaputt", branche="Handwerk", lat=0, lon=0))
         s.add(Kandidat(id=1, verein_id=1, unternehmen_id=1, entfernung_km=1, vorfilter_score=50))

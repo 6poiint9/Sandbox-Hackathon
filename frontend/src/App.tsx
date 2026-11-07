@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { tokenLesen } from './api'
+import { api } from './api'
+import type { Konto } from './api'
 import Analyse from './views/Analyse'
 import Assets from './views/Assets'
 import Detail from './views/Detail'
-import KontoSeite from './views/KontoSeite'
+import KontoSeite, { Anmeldung } from './views/KontoSeite'
 import Landing from './views/Landing'
 import Onboarding from './views/Onboarding'
 import Sponsoren from './views/Sponsoren'
@@ -37,11 +38,14 @@ const gehe = (pfad: string) => {
 
 export default function App() {
   const [ansicht, setAnsicht] = useState<Ansicht>(lesen)
-  const [angemeldet, setAngemeldet] = useState(() => !!tokenLesen())
+  const [konto, setKonto] = useState<Konto | null>(null)
+  const [geprueft, setGeprueft] = useState(false)
 
   useEffect(() => {
     const aktualisieren = () => setAnsicht(lesen())
-    const konto = () => setAngemeldet(!!tokenLesen())
+    const konto = () =>
+      api.get<Konto>('/konto/ich').then(setKonto).catch(() => setKonto(null)).finally(() => setGeprueft(true))
+    konto()
     window.addEventListener('hashchange', aktualisieren)
     window.addEventListener('konto-geaendert', konto)
     return () => {
@@ -51,6 +55,7 @@ export default function App() {
   }, [])
 
   const verein = 'verein' in ansicht ? ansicht.verein : null
+  const braucht_anmeldung = ansicht.art !== 'landing' && ansicht.art !== 'konto'
 
   return (
     <div className="min-h-screen">
@@ -60,7 +65,7 @@ export default function App() {
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-700 text-white">✦</span>
             Sponsorenkompass
           </button>
-          {verein && (
+          {verein && konto && (
             <nav className="flex gap-1 text-sm">
               <NavLink aktiv={ansicht.art === 'analyse' || ansicht.art === 'detail'} onClick={() => gehe(`/verein/${verein}`)}>Potenzialanalyse</NavLink>
               <NavLink aktiv={ansicht.art === 'sponsoren'} onClick={() => gehe(`/verein/${verein}/sponsoren`)}>Sponsoren</NavLink>
@@ -70,7 +75,7 @@ export default function App() {
           <span className="ml-auto hidden text-xs text-slate-500 sm:block">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</span>
           <div className="ml-auto flex items-center gap-2 sm:ml-0">
             <button onClick={() => gehe('/konto')} className="rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">
-              {angemeldet ? 'Mein Konto' : 'Anmelden'}
+              {konto ? 'Mein Konto' : 'Anmelden'}
             </button>
             {!verein && ansicht.art === 'landing' && (
               <button onClick={() => gehe('/start')} className="rounded-lg bg-teal-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-800">Ausprobieren</button>
@@ -81,16 +86,22 @@ export default function App() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         {ansicht.art === 'landing' && <Landing onStart={() => gehe('/start')} />}
-        {ansicht.art === 'konto' && <KontoSeite onVerein={(id) => gehe(`/verein/${id}`)} onStart={() => gehe('/start')} />}
-        {ansicht.art === 'start' && <Onboarding onFertig={(id) => gehe(`/verein/${id}`)} />}
-        {ansicht.art === 'analyse' && (
+        {ansicht.art === 'konto' && geprueft && <KontoSeite konto={konto} onVerein={(id) => gehe(`/verein/${id}`)} onStart={() => gehe('/start')} />}
+        {braucht_anmeldung && geprueft && !konto && (
+          <Anmeldung
+            hinweis={ansicht.art === 'start' ? 'Bitte meldet euch an oder legt kostenlos ein Konto an – dann startet die Potenzialanalyse. Eure Daten sind nur für euch sichtbar.' : 'Bitte anmelden, um diesen Verein zu sehen.'}
+            onAngemeldet={setKonto}
+          />
+        )}
+        {ansicht.art === 'start' && konto && <Onboarding onFertig={(id) => gehe(`/verein/${id}`)} />}
+        {ansicht.art === 'analyse' && konto && (
           <Analyse vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
         )}
-        {ansicht.art === 'detail' && (
+        {ansicht.art === 'detail' && konto && (
           <Detail vereinId={ansicht.verein} kandidatId={ansicht.kandidat} onZurueck={() => gehe(`/verein/${ansicht.verein}`)} />
         )}
-        {ansicht.art === 'assets' && <Assets vereinId={ansicht.verein} />}
-        {ansicht.art === 'sponsoren' && (
+        {ansicht.art === 'assets' && konto && <Assets vereinId={ansicht.verein} />}
+        {ansicht.art === 'sponsoren' && konto && (
           <Sponsoren vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
         )}
       </main>

@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     demo_mode: bool = False
     frontend_url: str = "http://localhost:5173"
 
+    # Anmeldung
+    cookie_secure: bool = True  # auf localhost erlauben Browser Secure-Cookies auch ohne HTTPS
+    sitzung_tage: int = 7  # absolute Laufzeit einer Sitzung
+    sitzung_leerlauf_stunden: int = 24  # Abmeldung nach Inaktivität
+    passwort_leckpruefung: bool = True  # Have I Been Pwned (k-Anonymität)
+
     # E-Mail-Benachrichtigung (optional). Ohne SMTP_HOST ist die Funktion aus.
     smtp_host: str = ""
     smtp_port: int = 587
