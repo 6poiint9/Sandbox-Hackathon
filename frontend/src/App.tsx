@@ -21,7 +21,7 @@ export default function App() {
         {health && (
           <ul className="space-y-1">
             <li>Backend: <span className="font-medium text-akzent">{health.status}</span></li>
-            <li>Exa-Key: {health.exa_konfiguriert ? 'eingetragen' : 'fehlt in backend/.env'}</li>
+            <li>Exa-Key: {health.exa_konfiguriert ? 'eingetragen' : 'fehlt (EXA_API_KEY in .env eintragen)'}</li>
             <li>Demo-Modus: {health.demo_mode ? 'an' : 'aus'}</li>
             <li>Katalog: {health.katalog_eintraege} Sponsoring-Möglichkeiten</li>
           </ul>

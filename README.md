@@ -149,7 +149,7 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-In `backend/.env` die Keys eintragen. Keys gehören nie ins Repository. Mit `DEMO_MODE=1` läuft die App ohne externe Aufrufe aus zwischengespeicherten Demo-Daten.
+Keys in `backend/.env` eintragen (eine `.env` im Hauptordner wird ebenfalls gelesen). Keys gehören nie ins Repository. Mit `DEMO_MODE=1` läuft die App ohne externe Aufrufe aus zwischengespeicherten Demo-Daten.
 
 ### Backend
 

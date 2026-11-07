@@ -9,8 +9,11 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
+    # Beide Orte sind erlaubt; backend/.env gewinnt, wenn ein Wert doppelt gesetzt ist.
     model_config = SettingsConfigDict(
-        env_file=BACKEND_DIR / ".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=(BACKEND_DIR.parent / ".env", BACKEND_DIR / ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     exa_api_key: str = ""
