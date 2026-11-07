@@ -43,47 +43,47 @@ Wir suchen Pilotvereine und einen ersten Verbandspartner.
 
 ## Drei Minuten, Video
 
-Englisch, zum Sprechen in etwa drei Minuten. Rund 360 Wörter, ruhiges Tempo landet bei drei Minuten. Zahlen nur so, wie sie auf den Folien stehen. Die 63.000 Vereine sind unsere eigene Schätzung, nicht eine amtliche Quote. Betriebe im Umkreis kommen aus Kartendaten, nicht aus dem Sprachmodell. Preise sind Richtpreise aus dem Katalog.
+Englisch, zum Sprechen in etwa drei Minuten. Rund 390 Wörter. Zahlen nur so, wie sie auf den Folien stehen. Die 63.000 Vereine sind unsere eigene Schätzung. Betriebe im Umkreis kommen aus der Adresse und einem Radius, nicht aus dem Sprachmodell. Preise sind Richtpreise.
 
 ### Slide 1 · Problem (0:00–0:40)
 
-Germany runs on nearly 630,000 registered clubs. More than ever. The volunteers are fewer: 36.7 percent, down from 40 percent in 2014.
+Germany runs on nearly 630,000 registered clubs. More than ever. Volunteers are down to 36.7 percent, from 40 percent in 2014. So there is more work, on fewer shoulders.
 
-Boards still hunt sponsors at night. Phone book, gut feeling, mass letters. No time after work. No sales craft. And when the board changes, the contacts go with them.
+Boards still hunt sponsors at night: phone book, gut feeling, mass letter. No time after work, no sales craft, and when the board changes, the contacts leave with them.
 
-I’m Timon, on a club board and an educator for club managers. With Nabil, AI and IT security, we built the fix.
+I’m Timon, on a club board, and I train club managers. With Nabil, from AI and IT security, we built the fix.
 
-### Slide 2 · Solution (0:40–1:15)
+### Slide 2 · Solution (0:40–1:20)
 
-Meet Sponsorenkompass: sponsor data and CRM for clubs, in one. Three minutes from the website to a pitch that is ready.
+Meet Sponsorenkompass, the sponsor data provider for clubs, with the CRM in the same place. About three minutes from the website to a pitch that is ready.
 
-First we read the club from its website: teams, league, audience. Second, we scan every local business and match it to a package, a guide price, and a verified source. Third, the letter and the phone script are ready to send.
+We read the club off its website: teams, league, audience. Then we take the club’s address and scan every business inside a radius around it. Each match comes with a package, a suggested price, and a source you can check. The letter and the phone script are ready.
 
-The goal: the club everyone asks, how did you get all these sponsors?
+The goal is that other clubs come to you and ask how you found all these sponsors.
 
-### Slide 3 · Product (1:15–1:55)
+### Slide 3 · Product (1:20–2:00)
 
-We built this in the hackathon, for the people who chase sponsors every season.
+We built it in the hackathon, for the people who phone sponsors every season.
 
-In the demo, every match says why the business fits, with a source: a local branch, or a sports sponsorship they already run. The letter is drafted, with a guide price. The pipeline holds every contact in one list. The club sends. Nothing goes out of the tool by itself.
+Every match in the demo says why the business fits, and names the source. A branch nearby, or a sponsorship they already run. The letter is drafted with a suggested price. Contacts sit in one pipeline, and the club sends. The tool never does.
 
-Adam, Head of Sports at a club in Konstanz, said it straight: I would pay someone 25 percent of every sponsorship they bring in.
+Adam, Head of Sports at a club in Konstanz, said it at once: I would pay someone 25 percent of every sponsorship they bring in.
 
-### Slide 4 · Business (1:55–2:35)
+### Slide 4 · Business (2:00–2:40)
 
 169 euros a year, paid back by a single sponsor. Analysis and three matches stay free.
 
-Our estimate: one in ten of 629,000 clubs actively seeks sponsors. About 63,000 clubs, 10.6 million euros a year. Ten percent of that in three years: 6,300 clubs, about 1.1 million in annual revenue.
+Our estimate: about one in ten of the 629,000 clubs is actively looking for sponsors. Roughly 63,000 clubs, 10.6 million euros a year. Ten percent of that in three years is 6,300 clubs, about 1.1 million euros a year.
 
-Football first, through boards we know. Then other sports, through associations. The subscription is step one. Next, more club administration on the same platform. Later, a commission on deals closed there.
+Football first, through boards we know, then other sports through the associations. Subscription first. Then more of the club’s admin, on the same platform. Later, a commission when a deal closes there.
 
-### Slide 5 · Why us, why now (2:35–3:00)
+### Slide 5 · Why us, why now (2:40–3:00)
 
-Why us: we live this every season. I know the board, I train club managers, and I have shipped SaaS. Nabil builds it.
+Why us: we live this every season. I know the board, I train club managers, and I have shipped SaaS. Nabil builds the product.
 
-Why now: local research costs cents, not an agency.
+Why now: checking a local business costs cents, not an agency.
 
-We are looking for pilot clubs, and for our first regional football association. Thank you.
+We are looking for pilot clubs, and for a first regional football association. Thank you.
 
 ## Nicht im Text
 
