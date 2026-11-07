@@ -1,7 +1,7 @@
 """Verein, Angebots-Inventar und Bestandssponsoren."""
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from app.data import katalog
@@ -68,6 +68,8 @@ class InventarEintrag(BaseModel):
     verfuegbar: bool = True
     vergeben_an: int | None = None
     preis_eur: int | None = None
+    anzahl: int = Field(default=1, ge=1, le=999)
+    belegt_manuell: int = Field(default=0, ge=0, le=999)
 
 
 @router.get("/vereine/{verein_id}/inventar", response_model=list[InventarPosten])

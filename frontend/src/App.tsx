@@ -3,7 +3,7 @@ import { api } from './api'
 import type { Konto } from './api'
 import Abo from './views/Abo'
 import Analyse from './views/Analyse'
-import Assets from './views/Assets'
+import Angebot from './views/Angebot'
 import Detail from './views/Detail'
 import KontoSeite from './views/KontoSeite'
 import Landing from './views/Landing'
@@ -22,7 +22,7 @@ type Ansicht =
   | { art: 'analyse'; verein: number }
   | { art: 'detail'; verein: number; kandidat: number }
   | { art: 'sponsoren'; verein: number }
-  | { art: 'assets'; verein: number }
+  | { art: 'angebot'; verein: number }
 
 function lesen(): Ansicht {
   const teile = window.location.hash.replace(/^#\/?/, '').split('/')
@@ -35,7 +35,7 @@ function lesen(): Ansicht {
   if (teile[0] !== 'verein' || !verein) return { art: 'landing' }
   if (teile[2] === 'kandidat' && Number(teile[3])) return { art: 'detail', verein, kandidat: Number(teile[3]) }
   if (teile[2] === 'sponsoren') return { art: 'sponsoren', verein }
-  if (teile[2] === 'assets') return { art: 'assets', verein }
+  if (teile[2] === 'angebot' || teile[2] === 'assets') return { art: 'angebot', verein }
   return { art: 'analyse', verein }
 }
 
@@ -76,7 +76,7 @@ export default function App() {
             <nav className="flex gap-4 text-[15px]">
               <NavLink aktiv={ansicht.art === 'analyse' || ansicht.art === 'detail'} onClick={() => gehe(`/verein/${verein}`)}>Potenzialanalyse</NavLink>
               <NavLink aktiv={ansicht.art === 'sponsoren'} onClick={() => gehe(`/verein/${verein}/sponsoren`)}>Sponsoren</NavLink>
-              <NavLink aktiv={ansicht.art === 'assets'} onClick={() => gehe(`/verein/${verein}/assets`)}>Assets</NavLink>
+              <NavLink aktiv={ansicht.art === 'angebot'} onClick={() => gehe(`/verein/${verein}/angebot`)}>Angebot</NavLink>
             </nav>
           )}
           <span className="ml-auto hidden text-xs text-stein-500 sm:block">Der Sponsor um die Ecke: gefunden, begründet, angesprochen.</span>
@@ -114,7 +114,7 @@ export default function App() {
         {ansicht.art === 'detail' && (
           <Detail vereinId={ansicht.verein} kandidatId={ansicht.kandidat} onZurueck={() => gehe(`/verein/${ansicht.verein}`)} />
         )}
-        {ansicht.art === 'assets' && <Assets vereinId={ansicht.verein} />}
+        {ansicht.art === 'angebot' && <Angebot vereinId={ansicht.verein} />}
         {ansicht.art === 'sponsoren' && (
           <Sponsoren vereinId={ansicht.verein} onOeffnen={(k) => gehe(`/verein/${ansicht.verein}/kandidat/${k}`)} />
         )}

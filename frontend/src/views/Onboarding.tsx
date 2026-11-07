@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { ErkannterSponsor, KatalogEintrag, ProfilVorschlag, Verein } from '../api'
+import LeistungsTabelle, { LEER, leistungKorrigieren } from '../components/LeistungsTabelle'
+import type { Leistung } from '../components/LeistungsTabelle'
 import { Fehler, Feld, Karte, Knopf, Lader, eingabe } from '../components/ui'
 
 const STANDARD_VORHANDEN = ['bande', 'website', 'social_media', 'spieltag', 'vereinsfest', 'trainingsanzug', 'turnier']
 const RECHERCHE_ANZAHL = 10
 
-type InventarWahl = Record<string, 'nein' | 'frei' | 'vergeben'>
+type InventarWahl = Record<string, Leistung>
 
 export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) => void }) {
   const [website, setWebsite] = useState('')
@@ -33,11 +35,6 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
     api.get<KatalogEintrag[]>('/katalog').then(setKatalog).catch(() => setFehler('Katalog nicht ladbar – läuft das Backend?'))
   }, [])
 
-  const kategorien = useMemo(() => {
-    const gruppen: Record<string, KatalogEintrag[]> = {}
-    for (const e of katalog) (gruppen[e.kategorie] ??= []).push(e)
-    return gruppen
-  }, [katalog])
 
   async function analysieren(e: React.FormEvent) {
     e.preventDefault()
@@ -53,8 +50,8 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       setMitglieder(v.mitglieder ? String(v.mitglieder) : '')
       setSponsoren(v.sponsoren)
       const wahl: InventarWahl = {}
-      for (const id of STANDARD_VORHANDEN) wahl[id] = 'frei'
-      for (const id of v.inventar_vergeben) wahl[id] = 'vergeben'
+      for (const id of STANDARD_VORHANDEN) wahl[id] = { haben: true, anzahl: 1, vergeben: 0 }
+      for (const id of v.inventar_vergeben) wahl[id] = { haben: true, anzahl: 1, vergeben: 1 }
       setInventar(wahl)
     } catch (err) {
       setFehler(`Analyse fehlgeschlagen: ${(err as Error).message}`)
@@ -63,9 +60,12 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
     }
   }
 
-  function inventarSetzen(id: string, wert: 'nein' | 'frei' | 'vergeben') {
-    setInventar((alt) => ({ ...alt, [id]: wert }))
+  function inventarSetzen(id: string, aenderung: Partial<Leistung>) {
+    setInventar((alt) => ({ ...alt, [id]: leistungKorrigieren({ ...(alt[id] ?? LEER), ...aenderung }) }))
   }
+
+  const gewaehlt = Object.values(inventar).filter((l) => l.haben)
+  const freieEinheiten = gewaehlt.reduce((n, l) => n + l.anzahl - l.vergeben, 0)
 
   async function potenzialBerechnen() {
     if (!vorschlag) return
@@ -100,8 +100,8 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       await api.put(
         `/vereine/${vid}/inventar`,
         Object.entries(inventar)
-          .filter(([, w]) => w !== 'nein')
-          .map(([katalog_id, w]) => ({ katalog_id, verfuegbar: w === 'frei' })),
+          .filter(([, l]) => l.haben)
+          .map(([katalog_id, l]) => ({ katalog_id, anzahl: l.anzahl, belegt_manuell: l.vergeben })),
       )
       // Umkreissuche + Recherche laufen im Hintergrund – die Analyse ist sofort da
       await api.post(`/vereine/${vid}/analyse?recherche_anzahl=${RECHERCHE_ANZAHL}`, {})
@@ -122,10 +122,10 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
         <Karte className="mt-6">
           <form onSubmit={analysieren} className="space-y-4">
             <Feld label="Website des Vereins">
-              <input className={eingabe} value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="z. B. fcemmendingen.de" required />
+              <input className={eingabe} value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="z. B. www.euer-verein.de" required />
             </Feld>
             <Feld label="Ort (optional)" hinweis="Nur nötig, wenn die Website keine Adresse der Sportstätte nennt.">
-              <input className={eingabe} value={ort} onChange={(e) => setOrt(e.target.value)} placeholder="z. B. Emmendingen" />
+              <input className={eingabe} value={ort} onChange={(e) => setOrt(e.target.value)} placeholder="z. B. Musterstadt" />
             </Feld>
             <Knopf type="submit" disabled={!!laedt}>Potenzial analysieren</Knopf>
             {laedt && <Lader text={laedt} />}
@@ -162,7 +162,7 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
           </Feld>
           <Feld label="Suchradius in km"><input className={eingabe} inputMode="numeric" value={radius} onChange={(e) => setRadius(e.target.value.replace(/\D/g, ''))} /></Feld>
           <Feld label="Sportstätte (Mittelpunkt der Suche)" hinweis="Aus der Website, nicht aus dem Impressum. Bitte prüfen.">
-            <input className={eingabe} value={sportstaette} onChange={(e) => setSportstaette(e.target.value)} placeholder="z. B. Elzstadion, Emmendingen" />
+            <input className={eingabe} value={sportstaette} onChange={(e) => setSportstaette(e.target.value)} placeholder="z. B. Sportpark Am Wald, Waldweg 1, 12345 Musterstadt" />
           </Feld>
           <Feld label="Ort"><input className={eingabe} value={ort} onChange={(e) => setOrt(e.target.value)} /></Feld>
         </div>
@@ -225,33 +225,14 @@ export default function Onboarding({ onFertig }: { onFertig: (vereinId: number) 
       </Karte>
 
       <Karte titel="Was könnt ihr Sponsoren anbieten?">
-        <p className="mb-3 text-sm text-stein-600">Haken setzen, was es bei euch gibt. Was schon vergeben ist, zählt nicht zum offenen Potenzial.</p>
-        <div className="space-y-5">
-          {Object.entries(kategorien).map(([kategorie, eintraege]) => (
-            <div key={kategorie}>
-              <p className="mb-2 text-sm font-semibold text-stein-700">{kategorie}</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {eintraege.map((e) => {
-                  const wert = inventar[e.id] ?? 'nein'
-                  return (
-                    <div key={e.id} className={`rounded-lg border px-3 py-2 text-sm ${wert === 'nein' ? 'border-stein-200' : 'border-rasen-600/40 bg-rasen-50/40'}`}>
-                      <label className="flex cursor-pointer items-start gap-2">
-                        <input type="checkbox" className="mt-0.5 accent-rasen-700" checked={wert !== 'nein'} onChange={(ev) => inventarSetzen(e.id, ev.target.checked ? 'frei' : 'nein')} />
-                        <span className="text-stein-800">{e.name}</span>
-                      </label>
-                      {wert !== 'nein' && (
-                        <label className="ml-6 mt-1 flex cursor-pointer items-center gap-2 text-xs text-stein-600">
-                          <input type="checkbox" className="accent-stein-500" checked={wert === 'vergeben'} onChange={(ev) => inventarSetzen(e.id, ev.target.checked ? 'vergeben' : 'frei')} />
-                          schon vergeben
-                        </label>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+        <p className="mb-4 text-sm text-stein-600">
+          Haken setzen, was es bei euch gibt, und eintragen, wie viel davon schon vergeben ist – zum Beispiel 12 Banden, davon 5 vergeben.
+          Nur freie Einheiten zählen zum offenen Potenzial.
+        </p>
+        <LeistungsTabelle katalog={katalog} werte={inventar} onAendern={inventarSetzen} />
+        <p className="mt-4 text-sm text-stein-700">
+          <strong>{gewaehlt.length}</strong> Leistungen ausgewählt · <strong>{freieEinheiten}</strong> Einheiten frei zum Anbieten
+        </p>
       </Karte>
 
       <div className="sticky bottom-0 -mx-4 flex flex-col gap-3 border-t border-stein-200 bg-stein-50/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center">

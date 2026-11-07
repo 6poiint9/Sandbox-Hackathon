@@ -8,7 +8,7 @@ type VereinKurz = { id: number; name: string; ort: string; spielklasse: string |
 function PasswortFeld({ wert, setWert, neu, label = 'Passwort' }: { wert: string; setWert: (v: string) => void; neu: boolean; label?: string }) {
   const [sichtbar, setSichtbar] = useState(false)
   return (
-    <Feld label={label} hinweis={neu ? 'Mindestens 12 Zeichen. Am besten mehrere Wörter, z. B. „Tor-Bratwurst-Flutlicht-Elz“.' : undefined}>
+    <Feld label={label} hinweis={neu ? 'Mindestens 12 Zeichen. Am besten mehrere Wörter, z. B. „Tor-Bratwurst-Flutlicht-Abstoß“.' : undefined}>
       <div className="flex gap-2">
         <input type={sichtbar ? 'text' : 'password'} required minLength={neu ? 12 : undefined} maxLength={256}
           autoComplete={neu ? 'new-password' : 'current-password'} className={eingabe} value={wert} onChange={(e) => setWert(e.target.value)} />
@@ -48,7 +48,7 @@ export function Anmeldung({ hinweis, onAngemeldet }: { hinweis?: string; onAngem
   return (
     <div className="mx-auto max-w-md space-y-4">
       <h1 className="text-2xl font-semibold text-stein-900">{modus === 'anmelden' ? 'Anmelden' : 'Konto anlegen'}</h1>
-      <p className="text-stein-600">{hinweis ?? 'Mit Konto bleiben eure Analysen, Sponsoren und Assets gespeichert und sind nur für euch sichtbar.'}</p>
+      <p className="text-stein-600">{hinweis ?? 'Mit Konto bleiben eure Analysen, Sponsoren und euer Angebot gespeichert und sind nur für euch sichtbar.'}</p>
       <Karte>
         <form onSubmit={absenden} className="space-y-3">
           {modus === 'registrieren' && <Feld label="Name (optional)"><input className={eingabe} autoComplete="name" maxLength={100} value={name} onChange={(e) => setName(e.target.value)} /></Feld>}

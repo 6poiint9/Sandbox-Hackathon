@@ -132,3 +132,67 @@ def test_mandant_b_erreicht_nichts_von_mandant_a(zwei_mandanten):
     assert len(a.get(f"/vereine/{ids['verein_id']}/aktivitaeten").json()) >= 1
     with Session(eng) as s:
         assert s.exec(select(Kandidat)).one().notiz == "vertraulich A"
+
+
+# --- Gäste (ohne Konto) sind ebenfalls eigene Mandanten ---------------------
+
+
+def _datensatz(client: TestClient, eng, nr: int) -> dict:
+    """Vollständiger Datensatz über alle Objektarten für einen Mandanten (Konto oder Gast)."""
+    vid = client.post("/vereine", json={"name": f"Verein {nr}", "ort": "Ort"}).json()["id"]
+    sid = client.post(f"/vereine/{vid}/sponsoren", json=[{"firma": f"Geheimer Sponsor {nr}"}]).json()[0]["id"]
+    asset = client.post(f"/vereine/{vid}/assets", json={"katalog_id": "bande", "anzahl": 5}).json()[0]
+    vergabe = client.post(f"/assets/{asset['id']}/vergaben", json={"sponsor_id": sid, "anzahl": 1}).json()[0]["vergaben"][0]["id"]
+    with Session(eng) as s:
+        s.add(Unternehmen(id=100 + nr, osm_id=f"n/{100 + nr}", name="Betrieb", branche="Handel", lat=0, lon=0))
+        s.add(Kandidat(id=100 + nr, verein_id=vid, unternehmen_id=100 + nr, entfernung_km=1, vorfilter_score=99,
+                       recherche_status="fertig", notiz=f"vertraulich {nr}"))
+        s.commit()
+    akt = client.post(f"/vereine/{vid}/aktivitaeten", json={"art": "notiz", "text": "intern", "sponsor_id": sid}).json()["id"]
+    return {"verein_id": vid, "sponsor_id": sid, "asset_id": asset["id"], "vergabe_id": vergabe,
+            "kandidat_id": 100 + nr, "aktivitaet_id": akt}
+
+
+def _angriff(angreifer: TestClient, ids: dict) -> list[str]:
+    lecks = []
+    for r in alle_routen():
+        platzhalter = re.findall(r"{(\w+)}", r.path)
+        if not platzhalter:
+            continue
+        pfad = r.path
+        for p in platzhalter:
+            pfad = pfad.replace("{" + p + "}", str(ids[p]))
+        for methode in r.methods:
+            antwort = angreifer.request(methode, pfad, json={})
+            if antwort.status_code < 300 or "Geheimer" in antwort.text or "vertraulich" in antwort.text:
+                lecks.append(f"{methode} {pfad} -> {antwort.status_code}")
+    return lecks
+
+
+def _gast() -> TestClient:
+    c = TestClient(app, base_url="https://testserver", headers=CSRF)
+    c.__enter__()
+    return c
+
+
+def test_gast_erreicht_nichts_von_konto(zwei_mandanten):
+    _, _, ids_a, _ = zwei_mandanten
+    gast = _gast()
+    try:
+        assert _angriff(gast, ids_a) == []
+    finally:
+        gast.__exit__(None, None, None)
+
+
+def test_konto_und_anderer_gast_erreichen_nichts_von_gast(zwei_mandanten):
+    _, b, _, eng = zwei_mandanten
+    gast_g, gast_h = _gast(), _gast()
+    try:
+        ids_g = _datensatz(gast_g, eng, 7)
+        assert gast_g.get(f"/vereine/{ids_g['verein_id']}").status_code == 200  # eigener Gast-Verein
+        assert _angriff(b, ids_g) == []  # angemeldetes fremdes Konto
+        assert _angriff(gast_h, ids_g) == []  # anderer Gast
+        assert gast_g.get(f"/vereine/{ids_g['verein_id']}/sponsoren").json()[0]["firma"] == "Geheimer Sponsor 7"
+    finally:
+        gast_g.__exit__(None, None, None)
+        gast_h.__exit__(None, None, None)

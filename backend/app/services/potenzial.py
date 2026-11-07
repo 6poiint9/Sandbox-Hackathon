@@ -132,7 +132,8 @@ def _menge(katalog_id: str, einheit: str, verein: Verein) -> tuple[int, str | No
 def belegte_einheiten(p: InventarPosten, vergaben: list[AssetVergabe]) -> int:
     if not p.verfuegbar or p.vergeben_an:
         return p.anzahl or 1
-    return min(p.anzahl or 1, sum(v.anzahl for v in vergaben if v.asset_id == p.id))
+    zugeordnet = sum(v.anzahl for v in vergaben if v.asset_id == p.id)
+    return min(p.anzahl or 1, zugeordnet + (p.belegt_manuell or 0))
 
 
 def berechnen(
