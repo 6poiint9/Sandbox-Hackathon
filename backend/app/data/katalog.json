@@ -1,0 +1,398 @@
+[
+  {
+    "id": "bande",
+    "kategorie": "Sichtbarkeit am Platz und in der Halle",
+    "name": "Bandenwerbung",
+    "gegenleistung": "Banner/Bande am Spielfeld",
+    "zielbranchen": [
+      "Handwerk",
+      "Handel",
+      "Gastronomie"
+    ],
+    "preis_min": 300,
+    "preis_max": 1500,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "findasponsor"
+  },
+  {
+    "id": "banner_halle",
+    "kategorie": "Sichtbarkeit am Platz und in der Halle",
+    "name": "Banner in der Halle",
+    "gegenleistung": "Banner an Hallenwand",
+    "zielbranchen": [
+      "Handwerk",
+      "Handel",
+      "Gastronomie"
+    ],
+    "preis_min": 200,
+    "preis_max": 1000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "anzeigetafel",
+    "kategorie": "Sichtbarkeit am Platz und in der Halle",
+    "name": "Anzeigetafel / Uhr",
+    "gegenleistung": "Logo an Tafel",
+    "zielbranchen": [
+      "Banken",
+      "Autohäuser"
+    ],
+    "preis_min": 1000,
+    "preis_max": 3000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "namensrecht_platz",
+    "kategorie": "Sichtbarkeit am Platz und in der Halle",
+    "name": "Namensrecht Sportplatz / Halle",
+    "gegenleistung": "„XY-Arena“",
+    "zielbranchen": [
+      "Banken",
+      "Stadtwerke",
+      "große Arbeitgeber"
+    ],
+    "preis_min": 2000,
+    "preis_max": 10000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "vereinsheim",
+    "kategorie": "Sichtbarkeit am Platz und in der Halle",
+    "name": "Präsenz im Vereinsheim",
+    "gegenleistung": "Logo, Flyer, Getränkekarte",
+    "zielbranchen": [
+      "Getränkehandel",
+      "Brauerei"
+    ],
+    "preis_min": 200,
+    "preis_max": 800,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "trikot_brust",
+    "kategorie": "Trikots und Ausrüstung",
+    "name": "Trikotbrust (1. Mannschaft)",
+    "gegenleistung": "Hauptlogo",
+    "zielbranchen": [
+      "Autohäuser",
+      "Banken",
+      "große Arbeitgeber"
+    ],
+    "preis_min": 1500,
+    "preis_max": 5000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "findasponsor"
+  },
+  {
+    "id": "trikot_ruecken",
+    "kategorie": "Trikots und Ausrüstung",
+    "name": "Trikotrücken / Ärmel",
+    "gegenleistung": "Zweitlogo",
+    "zielbranchen": [
+      "Handwerk",
+      "Dienstleister"
+    ],
+    "preis_min": 500,
+    "preis_max": 1500,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "trikot_jugend",
+    "kategorie": "Trikots und Ausrüstung",
+    "name": "Jugendtrikots (Satz je Team)",
+    "gegenleistung": "Logo auf Jugendtrikots",
+    "zielbranchen": [
+      "Familienbetriebe",
+      "Apotheken",
+      "Optiker"
+    ],
+    "preis_min": 400,
+    "preis_max": 1200,
+    "einheit": "je_satz",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "trainingsanzug",
+    "kategorie": "Trikots und Ausrüstung",
+    "name": "Trainingsanzüge / Aufwärmshirts",
+    "gegenleistung": "Logo auf Teamwear",
+    "zielbranchen": [
+      "Handwerk",
+      "Fitness",
+      "Physio"
+    ],
+    "preis_min": 500,
+    "preis_max": 2000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "ausruestung",
+    "kategorie": "Trikots und Ausrüstung",
+    "name": "Bälle, Tore, Material",
+    "gegenleistung": "Nennung als Ausrüster",
+    "zielbranchen": [
+      "Sportfachhandel",
+      "Versicherungen"
+    ],
+    "preis_min": null,
+    "preis_max": null,
+    "einheit": "saison",
+    "sachleistung": true,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "vereinsbus",
+    "kategorie": "Trikots und Ausrüstung",
+    "name": "Vereinsbus / Anhänger",
+    "gegenleistung": "Fahrzeugbeschriftung",
+    "zielbranchen": [
+      "Autohäuser",
+      "Logistik"
+    ],
+    "preis_min": 1000,
+    "preis_max": 3000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "website",
+    "kategorie": "Medien und Reichweite",
+    "name": "Logo auf Website / Sponsorenseite",
+    "gegenleistung": "Logo mit Link",
+    "zielbranchen": [
+      "alle"
+    ],
+    "preis_min": 100,
+    "preis_max": 500,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "social_media",
+    "kategorie": "Medien und Reichweite",
+    "name": "Social-Media-Beiträge",
+    "gegenleistung": "z. B. „Spieler des Spiels präsentiert von …“",
+    "zielbranchen": [
+      "Gastronomie",
+      "Handel",
+      "junge Marken"
+    ],
+    "preis_min": 300,
+    "preis_max": 1500,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "stadionheft",
+    "kategorie": "Medien und Reichweite",
+    "name": "Anzeige im Stadionheft / Vereinszeitung",
+    "gegenleistung": "Anzeige",
+    "zielbranchen": [
+      "lokaler Handel"
+    ],
+    "preis_min": 100,
+    "preis_max": 600,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "newsletter",
+    "kategorie": "Medien und Reichweite",
+    "name": "Nennung im Newsletter",
+    "gegenleistung": "Logo/Text",
+    "zielbranchen": [
+      "Dienstleister"
+    ],
+    "preis_min": 100,
+    "preis_max": 300,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "durchsage",
+    "kategorie": "Medien und Reichweite",
+    "name": "Stadiondurchsagen",
+    "gegenleistung": "Nennung am Spieltag",
+    "zielbranchen": [
+      "Gastronomie",
+      "Handel"
+    ],
+    "preis_min": 100,
+    "preis_max": 500,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "spieltag",
+    "kategorie": "Spieltag und Veranstaltungen",
+    "name": "Spieltags- / Matchball-Sponsor",
+    "gegenleistung": "Präsentation eines Heimspiels",
+    "zielbranchen": [
+      "Gastronomie",
+      "Autohäuser"
+    ],
+    "preis_min": 100,
+    "preis_max": 400,
+    "einheit": "je_spiel",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "turnier",
+    "kategorie": "Spieltag und Veranstaltungen",
+    "name": "Namensrecht Turnier / Jugendturnier",
+    "gegenleistung": "„XY-Cup“",
+    "zielbranchen": [
+      "Banken",
+      "Versicherungen"
+    ],
+    "preis_min": 500,
+    "preis_max": 2000,
+    "einheit": "je_turnier",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "vereinsfest",
+    "kategorie": "Spieltag und Veranstaltungen",
+    "name": "Stand / Präsentation beim Vereinsfest",
+    "gegenleistung": "Stand, Probieraktion",
+    "zielbranchen": [
+      "Bäckereien",
+      "Getränke",
+      "Handel"
+    ],
+    "preis_min": 200,
+    "preis_max": 1000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "sampling",
+    "kategorie": "Spieltag und Veranstaltungen",
+    "name": "Probier- oder Gutscheinaktion",
+    "gegenleistung": "Zugang zu Mitgliedern und Eltern",
+    "zielbranchen": [
+      "Gastronomie",
+      "Fitness",
+      "Handel"
+    ],
+    "preis_min": null,
+    "preis_max": null,
+    "einheit": "saison",
+    "sachleistung": true,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "azubi",
+    "kategorie": "Partnerschaft und Personal",
+    "name": "Ausbildungs- und Recruiting-Kooperation",
+    "gegenleistung": "Vorstellung bei Jugend und Eltern, Praktika",
+    "zielbranchen": [
+      "Handwerk",
+      "Industrie",
+      "Pflege"
+    ],
+    "preis_min": 500,
+    "preis_max": 3000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "patenschaft",
+    "kategorie": "Partnerschaft und Personal",
+    "name": "Patenschaft für eine Jugendmannschaft",
+    "gegenleistung": "Name an einem Team, Fotos, Berichte",
+    "zielbranchen": [
+      "Familienbetriebe"
+    ],
+    "preis_min": 300,
+    "preis_max": 1500,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "mitarbeiter_events",
+    "kategorie": "Partnerschaft und Personal",
+    "name": "Firmenevents mit dem Verein",
+    "gegenleistung": "Teamevent, Firmenlauf, Platznutzung",
+    "zielbranchen": [
+      "größere Arbeitgeber"
+    ],
+    "preis_min": 500,
+    "preis_max": 2000,
+    "einheit": "saison",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "mitgliedervorteil",
+    "kategorie": "Partnerschaft und Personal",
+    "name": "Rabatt für Mitglieder",
+    "gegenleistung": "Nennung als Partner, Kundenbindung",
+    "zielbranchen": [
+      "Handel",
+      "Gastronomie",
+      "Optiker"
+    ],
+    "preis_min": null,
+    "preis_max": null,
+    "einheit": "saison",
+    "sachleistung": true,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "businessclub",
+    "kategorie": "Partnerschaft und Personal",
+    "name": "Sponsorenkreis / Business-Club",
+    "gegenleistung": "Netzwerktreffen, VIP-Bereich",
+    "zielbranchen": [
+      "alle lokalen Unternehmen"
+    ],
+    "preis_min": 250,
+    "preis_max": 1000,
+    "einheit": "je_mitglied",
+    "sachleistung": false,
+    "quelle": "schaetzung"
+  },
+  {
+    "id": "sachsponsoring",
+    "kategorie": "Partnerschaft und Personal",
+    "name": "Sach- oder Dienstleistungssponsoring",
+    "gegenleistung": "Getränke, Essen, Druck, Reparaturen",
+    "zielbranchen": [
+      "Getränkehandel",
+      "Druckerei",
+      "Handwerk"
+    ],
+    "preis_min": null,
+    "preis_max": null,
+    "einheit": "saison",
+    "sachleistung": true,
+    "quelle": "schaetzung"
+  }
+]

@@ -1,2 +1,23 @@
-# Google App Engine generated folder
-appengine-generated/
+# Secrets
+.env
+*.env
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Datenbank und Cache (Demo-Cache bleibt im Repo)
+*.db
+backend/cache/*
+!backend/cache/demo/
+
+# Node
+node_modules/
+dist/
+
+# System
+.DS_Store
+Thumbs.db
