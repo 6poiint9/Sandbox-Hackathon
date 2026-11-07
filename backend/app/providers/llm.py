@@ -106,6 +106,7 @@ def analyse_modell() -> Sprachmodell:
 
 def text_modell() -> Sprachmodell:
     s = get_settings()
-    if s.llm_text_provider == "anthropic" and not s.anthropic_api_key:
-        return GeminiModell(s.llm_analyse_model)  # kein Anthropic-Key: Gemini übernimmt
+    if s.llm_text_provider != "gemini":
+        # Nur Gemini ist umgesetzt: einen fremden Modellnamen (z. B. claude-…) nie an Gemini schicken.
+        return GeminiModell(s.llm_analyse_model)
     return GeminiModell(s.llm_text_model)
